@@ -1,0 +1,5 @@
+(sym_lib_table
+  (lib (name "arduino")(type "Legacy")(uri "${KIPRJMOD}/arduino.lib")(options "")(descr ""))
+  (lib (name "Mostek")(type "KiCad")(uri "${KIPRJMOD}/Mostek.kicad_sym")(options "")(descr ""))
+  (lib (name "MDC")(type "Legacy")(uri "${KIPRJMOD}/MDC.lib")(options "")(descr ""))
+)
