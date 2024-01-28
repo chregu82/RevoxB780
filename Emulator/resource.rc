@@ -1,0 +1,4 @@
+#include <windows.h>
+#include "resource.h"
+
+IDB_B780 BITMAP DISCARDABLE "B780.bmp"

@@ -1,0 +1,6 @@
+#ifndef RESOURCE_H_INCLUDED
+#define RESOURCE_H_INCLUDED
+
+#define IDB_B780 101
+
+#endif // RESOURCE_H_INCLUDED
