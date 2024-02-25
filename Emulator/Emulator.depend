@@ -4,9 +4,14 @@
 	<windows.h>
 	"resource.h"
 
-1706283984 source:c:\users\lehne\onedrive\dokumente\c_proj\revoxb780\emulator\resource.rc
+1707409181 source:c:\users\lehne\onedrive\dokumente\c_proj\revoxb780\emulator\resource.rc
 	<windows.h>
 	"resource.h"
 
-1706284356 c:\users\lehne\onedrive\dokumente\c_proj\revoxb780\emulator\resource.h
+1707408944 c:\users\lehne\onedrive\dokumente\c_proj\revoxb780\emulator\resource.h
+
+1708458037 source:c:\users\lehne\onedrive\dokumente\c_proj\revoxb780\emulator\main.c
+	<windows.h>
+	"resource.h"
+	<stdio.h>
 

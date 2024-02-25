@@ -2031,7 +2031,7 @@
     (property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_2x05_P2.54mm_Vertical" (at 63.5 154.94 90)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Datasheet" " ~" (at 34.925 172.72 0)
+    (property "Datasheet" "MPE 087-2-010" (at 34.925 172.72 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (pin "1" (uuid d8d3c087-f88c-4d23-880a-86323643190e))

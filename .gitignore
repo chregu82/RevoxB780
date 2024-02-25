@@ -1,2 +1,8 @@
 ﻿Emulator/obj/Debug
 Emulator/bin/Debug
+NewCpuPCB/B780_CPU-backups
+NewCPU/RevoxB780.X/.generated_files
+NewCPU/RevoxB780.X/build
+NewCPU/RevoxB780.X/dist
+NewCPU/RevoxB780.X/nbproject/private
+NewCPU/RevoxB780.X/queuelogs
