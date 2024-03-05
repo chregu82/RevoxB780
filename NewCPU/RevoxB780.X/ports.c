@@ -94,5 +94,38 @@ void DisplayFreq(unsigned char On, unsigned char dig1, unsigned char dig2, unsig
 
 void DisplayTuningRecordPlay(unsigned char Upper, unsigned char Mode, unsigned char Dolby, unsigned char Record, unsigned char Stereo, unsigned char Input)
 {
-  
+    unsigned short dataA = 0;
+    unsigned short dataB = 0;
+    
+    // Upper/Lower
+    if (Upper == 'F')
+    {
+        dataA |= 0b01000101;
+    }
+    else
+    {
+        dataA |= 0b01110110;
+        if ((Upper == 0) || (Upper == 1))       // off or lower bar
+          bitset(dataA, 3); // clear upper bar
+        if ((Upper == 0) || (Upper == 2))       // off or upper bar
+          bitset(dataA, 0); // clear lower bar
+    }
+    // Dolby
+    if (Dolby == 0) bitset(dataA, 7);
+    // Record
+    dataA |= (RecordPlayDisp[Record] << 8);
+    // Stereo
+    if (Stereo == 0) bitset(dataA, 15);
+    // Record
+    WriteToDisplay(OUT_PB6_DLEN2, dataA, 0);
+    
+    // Tuning Mode (Memory)
+    dataB |= TuningModeDisp[Mode];
+    // Dolby
+    if (Dolby == 0) bitset(dataB, 7);
+    // Play
+    dataB |= (RecordPlayDisp[Input] << 8);
+    // Stereo
+    if (Stereo == 0) bitset(dataB, 15);
+    WriteToDisplay(OUT_PB6_DLEN2, dataB, 1);
 }

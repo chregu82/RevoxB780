@@ -33,16 +33,29 @@ int main(void)
     unsigned char dig3 = 0;
     unsigned char dig4 = 0;
     unsigned char dig5 = 1;
+    unsigned char Upper = 0;
+    unsigned char Mode = 0;
+    unsigned char Record = 0;
+    unsigned char Play = 1;
 
     while (1)
     {
         _delay_ms (1000);
         //DisplayFreq(dig3,dig4,dig5,dig4,dig5);
-        DisplayFreq(dig3, 0,'S','T','E','F');
+        DisplayFreq(1, 0,'S','T','E','F');
+        DisplayTuningRecordPlay('F', 1, dig3, Record, dig3, Play);
         dig4++;
         dig4 %= 31;
         dig5++;
         dig5 %= 31;
         dig3 = !dig3;
+        Upper++;
+        Upper %= 3;
+        Mode++;
+        Mode %= 13;
+        Record++;
+        Record %= 6;
+        Play++;
+        Play %= 6;
     }
 }

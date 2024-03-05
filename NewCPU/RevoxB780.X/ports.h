@@ -76,7 +76,7 @@ static const unsigned char FreqLow[31] = {
     0b10110000, // 3
     0b10011001, // 4
     0b10010100, // 5
-    0b00010100, // 6
+    0b00000100, // 6
     0b11110001, // 7
     0b00010000, // 8
     0b10010000, // 9
@@ -105,7 +105,7 @@ static const unsigned char FreqLow[31] = {
 
 // Frequency high value
 // Logic is inverse
-static const unsigned short FreqHigh[31] = {
+static const unsigned char FreqHigh[31] = {
     0b00010000, // 0
     0b01010111, // 1
     0b01001000, // 2
@@ -137,6 +137,34 @@ static const unsigned short FreqHigh[31] = {
     0b00100010, // S
     0b00101100, // T
     0b00010100, // U
+};
+
+// Tuning mode (memory slot)
+// Logic is inverse
+static const unsigned char TuningModeDisp[12] = {
+    0b01111111, // off
+    0b00111011, // 1
+    0b00000110, // 2
+    0b00100010, // 3
+    0b00101001, // 4
+    0b01100000, // 5
+    0b01000000, // 6
+    0b00110011, // 7
+    0b00000000, // 8
+    0b00100001, // 9
+    0b00000001, // A
+    0b01000101, // F
+};
+
+// Record Display
+// Logic is inverse
+static const unsigned char RecordPlayDisp[6] = {
+    0b01111111, // off
+    0b01110011, // 1
+    0b00001010, // 2
+    0b00010010, // 3
+    0b01110000, // 4
+    0b00010100, // 5
 };
 
 void LoadOutputMultiplexer(MultiplexOutEnum outputNbr, unsigned char value);
