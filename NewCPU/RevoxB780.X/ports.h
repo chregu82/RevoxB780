@@ -11,7 +11,9 @@
 #ifdef	__cplusplus
 extern "C" {
 #endif
-    
+
+#define F_CPU 8000000
+#include <util/delay.h>
 #include <avr/io.h>
 
 // Port A
@@ -64,6 +66,10 @@ typedef enum MultiplexOutEnum
     Mul_Out_SPA,
     Mul_Out_MUT
 } MultiplexOutEnum;
+
+void LoadOutputMultiplexer(MultiplexOutEnum outputNbr, unsigned char value);
+void WriteToDisplay(unsigned char pin, unsigned short data, unsigned char loadbit);
+
 
 #ifdef	__cplusplus
 }

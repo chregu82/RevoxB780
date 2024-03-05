@@ -5,9 +5,6 @@
  * Created on 4. Januar 2024, 21:59
  */
 
-#define F_CPU 8000000
-
-#include <util/delay.h>
 #include "fuses.h"
 #include "bitop.h"
 #include "ports.h"
@@ -22,7 +19,7 @@ int main(void)
     DDRE = 0;     // inputs only
     
     // init stereo signal
-    PORTB = (1<<OUT_PB0_ST);
+    PORTB = (1<<OUT_PB0_ST) | (1<<OUT_PB2_STROBE);
     // DON is already high with pull-up
     PORTD = (1<<OUT_PD0_NF1) | (1<<OUT_PD1_NF2)  | (1<<OUT_PD2_NF3) | (1<<OUT_PD3_NF4) | (1<<OUT_PD7_S);     // NF1-4 are high, S is high
     PORTA = (1<<OUT_PA4_NF5) | (1<<OUT_PA5_NF6) | (1<<OUT_PA6_NF7) | (1<<OUT_PA7_NF8);      // NF5-8 are high
@@ -36,7 +33,22 @@ int main(void)
 
     while (1)
     {
+        _delay_ms (500);
+        WriteToDisplay(OUT_PB6_DLEN2, 0x5555, 0);
+        _delay_ms (500);
+        WriteToDisplay(OUT_PB6_DLEN2, 0x5555, 1);
+        _delay_ms (500);
+        WriteToDisplay(OUT_PB7_DLEN1, 0x5555, 0);
+        _delay_ms (500);
+        WriteToDisplay(OUT_PB7_DLEN1, 0x5555, 1);
         
-        
+        _delay_ms (500);
+        WriteToDisplay(OUT_PB6_DLEN2, 0xAAAA, 0);
+        _delay_ms (500);
+        WriteToDisplay(OUT_PB6_DLEN2, 0xAAAA, 1);
+        _delay_ms (500);
+        WriteToDisplay(OUT_PB7_DLEN1, 0xAAAA, 0);
+        _delay_ms (500);
+        WriteToDisplay(OUT_PB7_DLEN1, 0xAAAA, 1);
     }
 }
