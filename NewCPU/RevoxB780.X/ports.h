@@ -67,9 +67,82 @@ typedef enum MultiplexOutEnum
     Mul_Out_MUT
 } MultiplexOutEnum;
 
+// Frequency low value
+// Logic is inverse
+static const unsigned char FreqLow[31] = {
+    0b01010000, // 0
+    0b11111001, // 1
+    0b00110010, // 2
+    0b10110000, // 3
+    0b10011001, // 4
+    0b10010100, // 5
+    0b00010100, // 6
+    0b11110001, // 7
+    0b00010000, // 8
+    0b10010000, // 9
+    0b00010001, // A
+    0b00011100, // B
+    0b01010110, // C
+    0b00111000, // d
+    0b00010110, // E
+    0b00010111, // F
+    0b10010000, // G
+    0b00011001, // H
+    0b11111001, // I
+    0b11111000, // J
+    0b11111111, // K
+    0b01011110, // L
+    0b11111111, // M
+    0b11111111, // N
+    0b01010000, // O
+    0b00010011, // P
+    0b11111111, // Q
+    0b11111111, // R
+    0b10010100, // S
+    0b00011110, // T
+    0b01011000, // U
+};
+
+// Frequency high value
+// Logic is inverse
+static const unsigned short FreqHigh[31] = {
+    0b00010000, // 0
+    0b01010111, // 1
+    0b01001000, // 2
+    0b01000010, // 3
+    0b00000111, // 4
+    0b00100010, // 5
+    0b00100000, // 6
+    0b01010011, // 7
+    0b00000000, // 8
+    0b00000010, // 9
+    0b00000001, // A
+    0b00100100, // B
+    0b00111000, // C
+    0b01000100, // d
+    0b00101000, // E
+    0b00101001, // F
+    0b00000010, // G
+    0b00000101, // H
+    0b01010111, // I
+    0b01010110, // J
+    0b11111111, // K
+    0b00111100, // L
+    0b11111111, // M
+    0b11111111, // N
+    0b00010000, // O
+    0b00001001, // P
+    0b11111111, // Q
+    0b11111111, // R
+    0b00100010, // S
+    0b00101100, // T
+    0b00010100, // U
+};
+
 void LoadOutputMultiplexer(MultiplexOutEnum outputNbr, unsigned char value);
 void WriteToDisplay(unsigned char pin, unsigned short data, unsigned char loadbit);
-
+void DisplayFreq(unsigned char On, unsigned char dig1, unsigned char dig2, unsigned char dig3, unsigned char dig4, unsigned char dig5);
+void DisplayTuningRecordPlay(unsigned char Upper, unsigned char Mode, unsigned char Dolby, unsigned char Record, unsigned char Stereo, unsigned char Input);
 
 #ifdef	__cplusplus
 }

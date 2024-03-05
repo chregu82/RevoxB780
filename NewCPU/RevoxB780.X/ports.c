@@ -59,3 +59,40 @@ void WriteToDisplay(unsigned char pin, unsigned short data, unsigned char loadbi
     PORTA &= 0b1111000;  // set A, B, C to low
     bitclr(PORTD, OUT_PD7_S); // set S to low too
 }
+
+void DisplayFreq(unsigned char On, unsigned char dig1, unsigned char dig2, unsigned char dig3, unsigned char dig4, unsigned char dig5)
+{
+    // Display off
+    if (On == 0)
+    {
+        WriteToDisplay(OUT_PB7_DLEN1, 0xFFFF, 0);
+        WriteToDisplay(OUT_PB7_DLEN1, 0xFFFF, 1);
+        return;
+    }
+    
+    // Display on
+    unsigned short dataA = 0;
+    unsigned short dataB = 0;
+
+    if (dig2 > 9) dig2 = dig2 +10 - 'A';
+    if (dig3 > 9) dig3 = dig3 +10 - 'A';
+    if (dig4 > 9) dig4 = dig4 +10 - 'A';
+    if (dig5 > 9) dig5 = dig5 +10 - 'A';
+
+    dataA |= (FreqLow[dig4] << 8);
+    dataA |= FreqHigh[dig2];
+    if (dig1) bitclr(dataA, 7);   // 1
+    else bitset(dataA, 7);
+    WriteToDisplay(OUT_PB7_DLEN1, dataA, 0);
+
+    dataB |= (FreqLow[dig5] << 8);
+    dataB |= FreqHigh[dig3];
+    if (dig3) bitclr(dataB, 12);   // Dot
+    else bitset(dataB, 12);
+    WriteToDisplay(OUT_PB7_DLEN1, dataB, 1);
+}
+
+void DisplayTuningRecordPlay(unsigned char Upper, unsigned char Mode, unsigned char Dolby, unsigned char Record, unsigned char Stereo, unsigned char Input)
+{
+  
+}

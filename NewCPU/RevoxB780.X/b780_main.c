@@ -30,25 +30,19 @@ int main(void)
         LoadOutputMultiplexer(i, 0);
     }
       
+    unsigned char dig3 = 0;
+    unsigned char dig4 = 0;
+    unsigned char dig5 = 1;
 
     while (1)
     {
-        _delay_ms (500);
-        WriteToDisplay(OUT_PB6_DLEN2, 0x5555, 0);
-        _delay_ms (500);
-        WriteToDisplay(OUT_PB6_DLEN2, 0x5555, 1);
-        _delay_ms (500);
-        WriteToDisplay(OUT_PB7_DLEN1, 0x5555, 0);
-        _delay_ms (500);
-        WriteToDisplay(OUT_PB7_DLEN1, 0x5555, 1);
-        
-        _delay_ms (500);
-        WriteToDisplay(OUT_PB6_DLEN2, 0xAAAA, 0);
-        _delay_ms (500);
-        WriteToDisplay(OUT_PB6_DLEN2, 0xAAAA, 1);
-        _delay_ms (500);
-        WriteToDisplay(OUT_PB7_DLEN1, 0xAAAA, 0);
-        _delay_ms (500);
-        WriteToDisplay(OUT_PB7_DLEN1, 0xAAAA, 1);
+        _delay_ms (1000);
+        //DisplayFreq(dig3,dig4,dig5,dig4,dig5);
+        DisplayFreq(dig3, 0,'S','T','E','F');
+        dig4++;
+        dig4 %= 31;
+        dig5++;
+        dig5 %= 31;
+        dig3 = !dig3;
     }
 }
