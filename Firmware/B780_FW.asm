@@ -557,7 +557,7 @@ A1a9:           LR   A,$2                ; 01a9 42          ; Lade Akku ab Scrat
 A1b6:           INS  1                   ; 01b6 a1          ; Lade invertierten Port 1 (I/O) in Akku            -> debug
                 INC                      ; 01b7 1f          ; Inkrementiere Akku                                -> debug
                 OUTS 1                   ; 01b8 b1          ; Schreibe Port 1                                   -> debug
-                LI   $f7                 ; 01b9 20 f7       ; Akku = 0xf7               
+                LI   $f7                 ; 01b9 20 f7       ; Akku = 0xf7 1111 0111              
                 OUT  $4                  ; 01bb 27 04       ; Schreibe Port 4   -> enable weg, strobe
                 INS  1                   ; 01bd a1          ; Lade invertierten Port 1 (I/O) in Akku            -> debug
                 INC                      ; 01be 1f          ; Inkrementiere Akku                                -> debug

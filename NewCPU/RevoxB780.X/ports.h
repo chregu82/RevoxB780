@@ -55,6 +55,51 @@ extern "C" {
 #define IN_PE5_Z PE5
 #define IN_PE6_Mul6 PE6
     
+typedef struct InputsType
+{
+    unsigned char H;    // Overtemperature
+    unsigned char DDE;  // Dolby Deemphasis
+    unsigned char HIBL; // High blend
+    unsigned char STME; // Store Memory
+    unsigned char KS8;  // Key 8
+    unsigned char RECOFF;   // Record output off
+    unsigned char NR;   // Noise reduction
+    unsigned char P;    // Pilot Present
+    unsigned char CHTM; // Change Tuning Mode
+    unsigned char KS7;  // Key 7
+    unsigned char RECSET;   // Set record output
+    unsigned char NOD;  // No Dolby Insert
+    unsigned char MONO; // FM Mono
+    unsigned char LSNE; // New entry (Star key)
+    unsigned char KS6;  // Key 6
+    unsigned char TA2;  // Tape 2 (5)
+    unsigned char FL;   //Frequency Low
+    unsigned char MOFF; // Muting off
+    unsigned char DOWN; // Down key
+    unsigned char KS5;  // Key 5
+    unsigned char TA1;  // Tape 1 (4)
+    unsigned char FH;   // Frequency High
+    unsigned char THSTA;    // Threshold Station
+    unsigned char UP;   // Up key
+    unsigned char KS4;  // Key 4
+    unsigned char AUX;  // Aux (3)
+    unsigned char TSPB; // Speaker B
+    unsigned char STLY; // Stereo only
+    unsigned char D75us;    // Deemphasis 75us
+    unsigned char KS3;  // Key 3
+    unsigned char PHO;  // Phono (2)
+    unsigned char TSPA; // Speaker A
+    unsigned char THSTE;    // Threshold Stereo
+    unsigned char KS0;  // Key 0
+    unsigned char KS2;  // Key 2
+    unsigned char TU;   // Tuner (1)
+    unsigned char DC;   // DC at Amp
+    unsigned char LOC;  // Synthesizer locked in
+    unsigned char KS9;  // Key 9
+    unsigned char KS1;  // Key 1
+    unsigned char Z;    // Antenna
+} InputsType;
+    
 typedef enum MultiplexOutEnum
 {
     Mul_Out_STFI,
@@ -171,6 +216,9 @@ void LoadOutputMultiplexer(MultiplexOutEnum outputNbr, unsigned char value);
 void WriteToDisplay(unsigned char pin, unsigned short data, unsigned char loadbit);
 void DisplayFreq(unsigned char On, unsigned char dig1, unsigned char dig2, unsigned char dig3, unsigned char dig4, unsigned char dig5);
 void DisplayTuningRecordPlay(unsigned char Upper, unsigned char Mode, unsigned char Dolby, unsigned char Record, unsigned char Stereo, unsigned char Input);
+
+void ReadInputs(InputsType* Inputs);
+void ReadInputsWithCheck(InputsType* Inputs1, InputsType* Inputs2);
 
 #ifdef	__cplusplus
 }

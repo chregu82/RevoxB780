@@ -1,5 +1,6 @@
 #include "ports.h"
 #include "bitop.h"
+#include <string.h>
 
 void DoClock()
 {
@@ -128,4 +129,33 @@ void DisplayTuningRecordPlay(unsigned char Upper, unsigned char Mode, unsigned c
     // Stereo
     if (Stereo == 0) bitset(dataB, 15);
     WriteToDisplay(OUT_PB6_DLEN2, dataB, 1);
+}
+
+void ReadInputs(InputsType* Inputs)
+{
+    unsigned char* data = (unsigned char*) Inputs;
+    for (unsigned char i=0; i<8;i++)
+    {
+        PORTA &= 0b11111000;    // clear A,B,C
+        PORTA |= i;             // Set select lines
+        // now we have to wait for the data to be stable
+        _delay_us(2);
+        data[0] = bitchk(PINE, IN_PE6_Mul6);
+        data[1] = bitchk(PINA, IN_PA3_Mul7);
+        data[2] = bitchk(PINC, IN_PC6_Mul8);
+        data[3] = bitchk(PINC, IN_PC7_Mul9);
+        data[4] = bitchk(PINE, IN_PE4_Mul10);
+        data += 5;
+        _delay_us(1);
+    }
+    Inputs->Z = bitchk(PINE, IN_PE5_Z);
+}
+
+void ReadInputsWithCheck(InputsType* Inputs1, InputsType* Inputs2)
+{
+    do {
+        ReadInputs(Inputs1);
+        _delay_ms(1);
+        ReadInputs(Inputs2);
+    } while (memcmp(Inputs1, Inputs2, sizeof(InputsType)) != 0);
 }
