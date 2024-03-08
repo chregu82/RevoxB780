@@ -8,10 +8,16 @@
 #include "fuses.h"
 #include "bitop.h"
 #include "ports.h"
+#include "remmem.h"
+#include "recplay.h"
+
+// Global Types
+
 
 // Declarations
 InputsType Inputs[2];   // Sigital inputs (keys, etc.) Array of 2 for data debounce
-
+RecPlayEnum PlaySource; // Source to play
+RecPlayEnum RecPlayKey; // Pressed key for Play or Record
 
 int main(void)
 {
@@ -37,6 +43,17 @@ int main(void)
     {
         LoadOutputMultiplexer(i, 0);
     }
+    
+    // Load Play Source from Eeprom or initialize
+    PlaySource = EEPROM_read(EepromPlay);
+    if ((PlaySource == RecPlayUndef) || (PlaySource > RecPlayTape2))
+    {
+        PlaySource = RecPlayAux;
+    }
+    SetPlay(PlaySource);
+    EEPROM_write(EepromPlay, PlaySource);
+    
+    DisplayTuningRecordPlay(0, 0, 0, 0, 0, PlaySource);
       
 //    unsigned char dig3 = 0;
 //    unsigned char dig4 = 0;
@@ -51,9 +68,18 @@ int main(void)
 
     while (1)
     {
-//        _delay_ms (1000);
-        
+        // first read all inputs
         ReadInputsWithCheck(&Inputs[0], &Inputs[1]);
+        
+        // Play / Record key pressed?
+        RecPlayKey = RecPlayKeyPressed(&Inputs[0]);
+        if (RecPlayKey)
+        {
+            PlaySource = RecPlayKey;
+            SetPlay(PlaySource);
+            EEPROM_write(EepromPlay, PlaySource);
+            DisplayTuningRecordPlay(0, 0, 0, 0, 0, PlaySource);
+        }
         
         nbrTrue = 0;
         for (unsigned char k=0; k<sizeof(Inputs[0]);k++)
@@ -63,7 +89,7 @@ int main(void)
 //        
 //        //DisplayFreq(dig3,dig4,dig5,dig4,dig5);
 //        DisplayFreq(Inputs[0].UP, 0,'S','T','E','F');
-        DisplayFreq(1, 0,nbrTrue/10,nbrTrue%10,0,0);
+        DisplayFreq(1, 0,nbrTrue/10,nbrTrue%10,PlaySource/16,PlaySource%16);
 //        DisplayTuningRecordPlay('F', 1, dig3, Record, dig3, Play);
 //        dig4++;
 //        dig4 %= 31;

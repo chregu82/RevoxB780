@@ -75,10 +75,10 @@ void DisplayFreq(unsigned char On, unsigned char dig1, unsigned char dig2, unsig
     unsigned short dataA = 0;
     unsigned short dataB = 0;
 
-    if (dig2 > 9) dig2 = dig2 +10 - 'A';
-    if (dig3 > 9) dig3 = dig3 +10 - 'A';
-    if (dig4 > 9) dig4 = dig4 +10 - 'A';
-    if (dig5 > 9) dig5 = dig5 +10 - 'A';
+    if (dig2 > 0xF) dig2 = 5;
+    if (dig3 > 0xF) dig3 = 29;
+    if (dig4 > 0xF) dig4 = 0xE;
+    if (dig5 > 0xF) dig5 = 0xF;
 
     dataA |= (FreqLow[dig4] << 8);
     dataA |= FreqHigh[dig2];
