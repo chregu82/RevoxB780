@@ -24,9 +24,9 @@ typedef enum RecPlayEnum
     RecPlayTape2,
 } RecPlayEnum;
 
-unsigned char RecPlayKeyPressed(InputsType* pInputs);
+unsigned char RecPlayKeyPressed(InputsType* pInputs, unsigned char *pLocked);
 void SetPlay(RecPlayEnum Play);
-
+void SetRecord(RecPlayEnum Record);
 
 #ifdef	__cplusplus
 }

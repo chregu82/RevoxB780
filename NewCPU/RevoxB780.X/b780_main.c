@@ -11,16 +11,27 @@
 #include "remmem.h"
 #include "recplay.h"
 
-// Global Types
+#define TICK_TIME_US    128
+#define TICK_128_US TCNT1     // 128us Tick (8MHz / 1024)
 
+#define TICKS_500ms (unsigned short)(500000/TICK_TIME_US)   // 3906
 
 // Declarations
 InputsType Inputs[2];   // Sigital inputs (keys, etc.) Array of 2 for data debounce
 RecPlayEnum PlaySource; // Source to play
+RecPlayEnum RecordSource; // Source for recording
 RecPlayEnum RecPlayKey; // Pressed key for Play or Record
+unsigned char RecPlayLocked = 0;        // Lock other rec/play key pressed while another key is pressed
+
+// Input Edges
+unsigned char oldRECSET, RECSETpress;
 
 int main(void)
 {
+    // Set up a timer with 1/1024 system clock
+    TCCR1A = 0;
+    TCCR1B = (1<<CS10) | (1<<CS12);
+    
     // Ports configuration (IN/OUT)
     DDRA = (1<<OUT_PA0_A) | (1<<OUT_PA1_B) | (1<<OUT_PA2_C) | (1<<OUT_PA4_NF5) | (1<<OUT_PA5_NF6) | (1<<OUT_PA6_NF7) | (1<<OUT_PA7_NF8);
     DDRB = 0xFF - (1<<OUT_PB1_DON);     // DON is either 0 or floating, has pull-up and therefore is high if configured as output
@@ -53,16 +64,17 @@ int main(void)
     SetPlay(PlaySource);
     EEPROM_write(EepromPlay, PlaySource);
     
-    DisplayTuningRecordPlay(0, 0, 0, 0, 0, PlaySource);
-      
-//    unsigned char dig3 = 0;
-//    unsigned char dig4 = 0;
-//    unsigned char dig5 = 1;
-//    unsigned char Upper = 0;
-//    unsigned char Mode = 0;
-//    unsigned char Record = 0;
-//    unsigned char Play = 1;
-//    
+    // Load Record Source from Eeprom or initialize
+    RecordSource = EEPROM_read(EepromRecord);
+    if (RecordSource > RecPlayTape2)
+    {
+        RecordSource = RecPlayUndef;
+    }
+    SetRecord(RecordSource);
+    EEPROM_write(EepromRecord, RecordSource);
+    
+    DisplayTuningRecordPlay(0, 0, 0, RecordSource, 0, PlaySource);
+    
     unsigned char nbrTrue;
     unsigned char* data = (unsigned char*)&Inputs[0];
 
@@ -72,7 +84,12 @@ int main(void)
         ReadInputsWithCheck(&Inputs[0], &Inputs[1]);
         
         // Play / Record key pressed?
-        RecPlayKey = RecPlayKeyPressed(&Inputs[0]);
+        RecPlayKey = RecPlayKeyPressed(&Inputs[0], &RecPlayLocked);
+        
+        // RECSET pressed?
+        RECSETpress = ((Inputs[0].RECSET == 0) && (oldRECSET == 1));
+        oldRECSET = Inputs[0].RECSET;
+        
         if (RecPlayKey)
         {
             PlaySource = RecPlayKey;
@@ -86,23 +103,7 @@ int main(void)
         {
             if (data[k] != 0) nbrTrue++;
         }
-//        
-//        //DisplayFreq(dig3,dig4,dig5,dig4,dig5);
-//        DisplayFreq(Inputs[0].UP, 0,'S','T','E','F');
+        
         DisplayFreq(1, 0,nbrTrue/10,nbrTrue%10,PlaySource/16,PlaySource%16);
-//        DisplayTuningRecordPlay('F', 1, dig3, Record, dig3, Play);
-//        dig4++;
-//        dig4 %= 31;
-//        dig5++;
-//        dig5 %= 31;
-//        dig3 = !dig3;
-//        Upper++;
-//        Upper %= 3;
-//        Mode++;
-//        Mode %= 13;
-//        Record++;
-//        Record %= 6;
-//        Play++;
-//        Play %= 6;
     }
 }

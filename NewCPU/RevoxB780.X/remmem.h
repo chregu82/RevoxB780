@@ -17,6 +17,7 @@ extern "C" {
 typedef enum EepromLayoutEnum
 {
     EepromPlay,
+    EepromRecord,
 } EepromLayoutEnum;
 
 unsigned char EEPROM_read(unsigned short addr);

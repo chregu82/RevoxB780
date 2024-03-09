@@ -203,13 +203,14 @@ static const unsigned char TuningModeDisp[12] = {
 
 // Record Display
 // Logic is inverse
-static const unsigned char RecordPlayDisp[6] = {
+static const unsigned char RecordPlayDisp[7] = {
     0b01111111, // off
     0b01110011, // 1
     0b00001010, // 2
     0b00010010, // 3
     0b01110000, // 4
     0b00010100, // 5
+    0b11011111, // _
 };
 
 void LoadOutputMultiplexer(MultiplexOutEnum outputNbr, unsigned char value);
