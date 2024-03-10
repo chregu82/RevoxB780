@@ -16,8 +16,7 @@
 extern "C" {
 #endif
 
-void HandleProtection(InputsType* pInput);
-
+void HandleProtection(InputsType* pInput, unsigned char* pProtOk, unsigned short* pTmr);
 
 #ifdef	__cplusplus
 }

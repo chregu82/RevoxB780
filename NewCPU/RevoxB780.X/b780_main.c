@@ -12,7 +12,11 @@
 #include "recplay.h"
 #include "protection.h"
 
-// Declarations
+//////////////////
+// Declarations //
+//////////////////
+
+// Record / Play
 InputsType Inputs[2];   // Digital inputs (keys, etc.) Array of 2 for data debounce
 RecPlayEnum PlaySource; // Source to play
 RecPlayEnum RecordSource; // Source for recording
@@ -21,6 +25,10 @@ unsigned short RecordBlinkTmr;   // Timer for blinking the record display
 unsigned char RecTimeoutCnt;     // Counter for record set timeout 20s (40*0.5s)
 RecPlayEnum RecPlayKey; // Pressed key for Play or Record
 unsigned char RecPlayLocked = 0;        // Lock other rec/play key pressed while another key is pressed
+
+// Protection
+unsigned char ProtectionOk = 0;
+unsigned short ProtTmr;
 
 int main(void)
 {
@@ -38,7 +46,7 @@ int main(void)
     // init stereo signal
     PORTB = (1<<OUT_PB0_ST) | (1<<OUT_PB2_STROBE);
     // DON is already high with pull-up
-    PORTD = (1<<OUT_PD0_NF1) | (1<<OUT_PD1_NF2)  | (1<<OUT_PD2_NF3) | (1<<OUT_PD3_NF4) | (1<<OUT_PD7_S);     // NF1-4 are high, S is high
+    PORTD = (1<<OUT_PD0_NF1) | (1<<OUT_PD1_NF2)  | (1<<OUT_PD2_NF3) | (1<<OUT_PD3_NF4) | (1<<OUT_PD5_PONLR) | (1<<OUT_PD6_PH) | (1<<OUT_PD7_S);     // NF1-4 are high, PON is enabled (1), PH is disabled (1), S is high
     PORTA = (1<<OUT_PA4_NF5) | (1<<OUT_PA5_NF6) | (1<<OUT_PA6_NF7) | (1<<OUT_PA7_NF8);      // NF5-8 are high
     
     // Clear Display

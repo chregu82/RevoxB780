@@ -2973,7 +2973,7 @@ Ae1e:           LISU 4                   ; 0e1e 64          ; Fülle oberes ISAR 
                 NS   (IS)                ; 0e21 fc          ; Akku &= Scratchpad 46
                 BF   $4                  ; 0e22 94 50       ; Branch wenn nicht null (bit 0 von Scratchpad 46 war 1) um +0x50 nach 0xe73
                 LIS  $0                  ; 0e24 70          ; Akku = 0
-                OUT  $5                  ; 0e25 27 05       ; Schaltet Port 5 alles auf High       -> Kopfhörer aus, Endstufe aus
+                OUT  $5                  ; 0e25 27 05       ; Schaltet Port 5 alles auf High       -> Kopfhörer PH aus, Endstufe aus PONL PONR
                 PI   $4f96               ; 0e27 28 4f 96    ; PC1 = 0xe2a, Call Subroutine 0xf96 -> Delay1Sec                
 ; Hier wird bei Übertemperatur und DC am Ausgang die Endstufe abgeschaltet ond die Lautsprecher und Kopfhöhrer getrennt
                 PI   $40cd               ; 0e2a 28 40 cd    ; PC1 = 0xe2d, Call Subroutine 0x0cd -> LoadInputsWitchCheck
@@ -2997,7 +2997,7 @@ Ae38:           INS  1                   ; 0e38 a1          ; Lade invertierten 
                 OUTS 1                   ; 0e42 b1          ; Schreibe Port 1 (xxx x010), wird invertiert ausgegeben    -> SPB (Speakers B ON)
                 PI   $45b1               ; 0e43 28 45 b1    ; PC1 = 0xe46, Call Subroutine 0x5b1 -> LoadLowToOutputMultiplexer
                 LIS  $0                  ; 0e46 70          ; Akku = 0
-                OUT  $5                  ; 0e47 27 05       ; Schaltet Port 5 alles auf High       -> Kopfhörer aus, Endstufe aus
+                OUT  $5                  ; 0e47 27 05       ; Schaltet Port 5 alles auf High       -> Kopfhörer PH aus, Endstufe aus PONL PONR
                 LISU 4                   ; 0e49 64          ; Fülle oberes ISAR mit 4x
                 LISL 6                   ; 0e4a 6e          ; Fülle unteres ISAR mit x6
                 LR   A,(IS)              ; 0e4b 4c          ; Lade Akku ab Scratchpad 46

@@ -23,6 +23,7 @@
       <itemPath>ports.c</itemPath>
       <itemPath>remmem.c</itemPath>
       <itemPath>recplay.c</itemPath>
+      <itemPath>protection.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
