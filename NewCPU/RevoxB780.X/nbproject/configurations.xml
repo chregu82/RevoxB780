@@ -9,6 +9,8 @@
       <itemPath>bitop.h</itemPath>
       <itemPath>remmem.h</itemPath>
       <itemPath>recplay.h</itemPath>
+      <itemPath>protection.h</itemPath>
+      <itemPath>timer.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
