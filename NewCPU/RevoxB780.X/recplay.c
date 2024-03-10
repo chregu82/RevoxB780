@@ -3,6 +3,7 @@
 #include "bitop.h"
 
 // Pressed key to Input / Record Number
+// Lock new key presses while not all keys released
 unsigned char RecPlayKeyPressed(InputsType* pInputs, unsigned char *pLocked)
 {
     unsigned char ret = RecPlayUndef;

@@ -17,9 +17,12 @@
 #define TICKS_500ms (unsigned short)(500000/TICK_TIME_US)   // 3906
 
 // Declarations
-InputsType Inputs[2];   // Sigital inputs (keys, etc.) Array of 2 for data debounce
+InputsType Inputs[2];   // Digital inputs (keys, etc.) Array of 2 for data debounce
 RecPlayEnum PlaySource; // Source to play
 RecPlayEnum RecordSource; // Source for recording
+unsigned char RecSetActive;     // Waiting for record input set
+unsigned short RecordBlinkTmr;   // Timer for blinking the record display
+unsigned char RecTimeoutCnt;     // Counter for record set timeout 20s (40*0.5s)
 RecPlayEnum RecPlayKey; // Pressed key for Play or Record
 unsigned char RecPlayLocked = 0;        // Lock other rec/play key pressed while another key is pressed
 
@@ -89,13 +92,62 @@ int main(void)
         // RECSET pressed?
         RECSETpress = ((Inputs[0].RECSET == 0) && (oldRECSET == 1));
         oldRECSET = Inputs[0].RECSET;
+        if (RECSETpress)
+        {
+            RecSetActive = 1;
+            RecordBlinkTmr = TICK_128_US;   // Set start time
+            RecTimeoutCnt = 0;
+            if (RecordSource == RecPlayUndef) DisplayTuningRecordPlay(0, 0, 0, 6, 0, PlaySource);   // Dash char for record
+        }
         
-        if (RecPlayKey)
+        if (RecSetActive)
+        {
+            if (RecPlayKey)
+            {
+                // Waiting for key press (Record set)
+                RecordSource = RecPlayKey;
+                SetRecord(RecordSource);
+                EEPROM_write(EepromRecord, RecordSource);
+                DisplayTuningRecordPlay(0, 0, 0, RecordSource, 0, PlaySource);
+                RecSetActive = 0;
+            }
+            else
+            {
+                // Blink display 500ms, timeout 20s
+                if ((TICK_128_US - RecordBlinkTmr) > TICKS_500ms)
+                {
+                    RecordBlinkTmr += TICKS_500ms;
+                    RecTimeoutCnt++;
+                    if (RecTimeoutCnt & 0x01)
+                    {
+                        DisplayTuningRecordPlay(0, 0, 0, 0, 0, PlaySource);   // Dash char for record
+                    }
+                    else
+                    {
+                        if (RecordSource == RecPlayUndef) DisplayTuningRecordPlay(0, 0, 0, 6, 0, PlaySource);   // Dash char for record
+                        else DisplayTuningRecordPlay(0, 0, 0, RecordSource, 0, PlaySource);
+                    }
+                    // Timeout
+                    if (RecTimeoutCnt >= 40) RecSetActive = 0;
+                }
+                // off
+                if (Inputs[0].RECOFF == 0)
+                {
+                    RecordSource = RecPlayUndef;
+                    SetRecord(RecordSource);
+                    EEPROM_write(EepromRecord, RecordSource);
+                    DisplayTuningRecordPlay(0, 0, 0, RecordSource, 0, PlaySource);
+                    RecSetActive = 0;
+                }
+            }
+        }
+        // Select play source
+        else if (RecPlayKey)
         {
             PlaySource = RecPlayKey;
             SetPlay(PlaySource);
             EEPROM_write(EepromPlay, PlaySource);
-            DisplayTuningRecordPlay(0, 0, 0, 0, 0, PlaySource);
+            DisplayTuningRecordPlay(0, 0, 0, RecordSource, 0, PlaySource);
         }
         
         nbrTrue = 0;

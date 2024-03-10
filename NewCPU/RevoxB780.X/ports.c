@@ -134,17 +134,17 @@ void DisplayTuningRecordPlay(unsigned char Upper, unsigned char Mode, unsigned c
 void ReadInputs(InputsType* Inputs)
 {
     unsigned char* data = (unsigned char*) Inputs;
-    for (unsigned char i=0; i<8;i++)
+    for (unsigned char i=0; i<8; i++)
     {
         PORTA &= 0b11111000;    // clear A,B,C
         PORTA |= i;             // Set select lines
         // now we have to wait for the data to be stable
         _delay_us(2);
-        data[0] = bitchk(PINE, IN_PE6_Mul6);
-        data[1] = bitchk(PINA, IN_PA3_Mul7);
-        data[2] = bitchk(PINC, IN_PC6_Mul8);
-        data[3] = bitchk(PINC, IN_PC7_Mul9);
-        data[4] = bitchk(PINE, IN_PE4_Mul10);
+        data[0] = (bitchk(PINE, IN_PE6_Mul6) != 0);
+        data[1] = (bitchk(PINA, IN_PA3_Mul7) != 0);
+        data[2] = (bitchk(PINC, IN_PC6_Mul8) != 0);
+        data[3] = (bitchk(PINC, IN_PC7_Mul9) != 0);
+        data[4] = (bitchk(PINE, IN_PE4_Mul10) != 0);
         data += 5;
         _delay_us(1);
     }
