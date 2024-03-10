@@ -102,9 +102,9 @@ int main(void)
         
         if (RecSetActive)
         {
-            if (RecPlayKey)
+            if ((RecPlayKey) || (Inputs[0].RECOFF == 0))
             {
-                // Waiting for key press (Record set)
+                // Waiting for key press (Record set) or Record off key
                 RecordSource = RecPlayKey;
                 SetRecord(RecordSource);
                 EEPROM_write(EepromRecord, RecordSource);
@@ -128,16 +128,11 @@ int main(void)
                         else DisplayTuningRecordPlay(0, 0, 0, RecordSource, 0, PlaySource);
                     }
                     // Timeout
-                    if (RecTimeoutCnt >= 40) RecSetActive = 0;
-                }
-                // off
-                if (Inputs[0].RECOFF == 0)
-                {
-                    RecordSource = RecPlayUndef;
-                    SetRecord(RecordSource);
-                    EEPROM_write(EepromRecord, RecordSource);
-                    DisplayTuningRecordPlay(0, 0, 0, RecordSource, 0, PlaySource);
-                    RecSetActive = 0;
+                    if (RecTimeoutCnt >= 40)
+                    {
+                        RecSetActive = 0;
+                        DisplayTuningRecordPlay(0, 0, 0, RecordSource, 0, PlaySource);
+                    }
                 }
             }
         }
