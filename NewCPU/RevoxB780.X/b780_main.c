@@ -29,8 +29,7 @@ unsigned char RecPlayLocked = 0;        // Lock other rec/play key pressed while
 // Protection
 ProtStateEnum ProtectionState = PrStProtection;
 unsigned short ProtTmr;
-unsigned char SpkOnA = 0;
-unsigned char SpkOnB = 0;
+unsigned char SpkOn[2] = {0, 0};
 
 int main(void)
 {
@@ -146,7 +145,7 @@ int main(void)
         }
         
         // Speaker Protection
-        HandleProtection(&Inputs[0], &ProtectionState, &ProtTmr, &SpkOnA, &SpkOnB);
+        HandleProtection(&Inputs[0], &ProtectionState, &ProtTmr, SpkOn);
         
         nbrTrue = 0;
         for (unsigned char k=0; k<sizeof(Inputs[0]);k++)

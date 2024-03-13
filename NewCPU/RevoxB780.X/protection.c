@@ -2,8 +2,10 @@
 #include "protection.h"
 #include "bitop.h"
 
-void HandleProtection(InputsType* pInput, ProtStateEnum* pProtState, unsigned short* pTmr, unsigned char* pSpkOnA, unsigned char* pSpkOnB)
+void HandleProtection(InputsType* pInput, ProtStateEnum* pProtState, unsigned short* pTmr, unsigned char* pSpkOn)
 {
+    unsigned char SpeakerKey[2];
+    
     while(1)    // Blocking while protection mode active
     {
         // Check protection inputs DC / H
@@ -13,10 +15,11 @@ void HandleProtection(InputsType* pInput, ProtStateEnum* pProtState, unsigned sh
             *pTmr = TICK_128_US;    // Set timer start value
             bitclr(PORTD, OUT_PD5_PONLR);   // Switch amp off
             bitset(PORTD, OUT_PD6_PH);   // Switch PH on
+            // Reset Speaker relays
             LoadOutputMultiplexer(Mul_Out_SPA, 0);
-            *pSpkOnA = 0;
+            pSpkOn[0] = 0;
             LoadOutputMultiplexer(Mul_Out_SPB, 0);
-            *pSpkOnB = 0;
+            pSpkOn[1] = 0;
         }
         switch (*pProtState)
         {
@@ -40,15 +43,17 @@ void HandleProtection(InputsType* pInput, ProtStateEnum* pProtState, unsigned sh
                 break;
 
             case PrStActivateSpeaker:
-                if (*pSpkOnA == pInput->TSPA)
+                // Activate speaker if corresponding key is pressed
+                SpeakerKey[0] = pInput->TSPA;
+                SpeakerKey[1] = pInput->TSPB;
+                
+                for (unsigned char i=0; i<2; i++)
                 {
-                    LoadOutputMultiplexer(Mul_Out_SPA, !pInput->TSPA);
-                    *pSpkOnA = (pInput->TSPA == 0);
-                }
-                if (*pSpkOnB == pInput->TSPB)
-                {
-                    LoadOutputMultiplexer(Mul_Out_SPB, !pInput->TSPB);
-                    *pSpkOnB = (pInput->TSPB == 0);
+                    if (pSpkOn[i] == SpeakerKey[i])
+                    {
+                        LoadOutputMultiplexer(Mul_Out_SPA-i, !SpeakerKey[i]);
+                        pSpkOn[i] = (SpeakerKey[i] == 0);
+                    }
                 }
                 return;
         }

@@ -22,7 +22,7 @@ typedef enum ProtStateEnum
     PrStActivateSpeaker
 } ProtStateEnum;
 
-void HandleProtection(InputsType* pInput, ProtStateEnum* pProtState, unsigned short* pTmr, unsigned char* pSpkOnA, unsigned char* pSpkOnB);
+void HandleProtection(InputsType* pInput, ProtStateEnum* pProtState, unsigned short* pTmr, unsigned char* pSpkOn);
 
 #ifdef	__cplusplus
 }
