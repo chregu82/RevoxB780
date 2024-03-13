@@ -2967,18 +2967,24 @@ Ae1b:           JMP  $4628               ; 0e1b 29 46 28
 
 ; HandleProtection
 ; Hier wird Endstufe ein/aus und Protection abgehandelt
+; ISAR 46: Bit0->Protection ok, bit1->SpkB, bit2->SpkA
+; Wenn Protection ok bit direkt nach Lautsprecher ein
+; Sonst PH aus und Endstufe aus, dann 1 sek warten
+; Nach Wartezeit werden Inputs neu geladen
 Ae1e:           LISU 4                   ; 0e1e 64          ; Fülle oberes ISAR mit 4x
                 LISL 6                   ; 0e1f 6e          ; Fülle unteres ISAR mit x6
                 LIS  $1                  ; 0e20 71          ; Akku = 0x01
                 NS   (IS)                ; 0e21 fc          ; Akku &= Scratchpad 46
-                BF   $4                  ; 0e22 94 50       ; Branch wenn nicht null (bit 0 von Scratchpad 46 war 1) um +0x50 nach 0xe73
+                BF   $4                  ; 0e22 94 50       ; Branch wenn nicht null (bit 0 von Scratchpad 46 war 1), also wenn Protection OK um +0x50 nach 0xe73
                 LIS  $0                  ; 0e24 70          ; Akku = 0
                 OUT  $5                  ; 0e25 27 05       ; Schaltet Port 5 alles auf High       -> Kopfhörer PH aus, Endstufe aus PONL PONR
                 PI   $4f96               ; 0e27 28 4f 96    ; PC1 = 0xe2a, Call Subroutine 0xf96 -> Delay1Sec                
 ; Hier wird bei Übertemperatur und DC am Ausgang die Endstufe abgeschaltet ond die Lautsprecher und Kopfhöhrer getrennt
                 PI   $40cd               ; 0e2a 28 40 cd    ; PC1 = 0xe2d, Call Subroutine 0x0cd -> LoadInputsWitchCheck
                 LISU 2                   ; 0e2d 62          ; Fülle oberes ISAR mit 2x
-; CheckHeatAndDC (Einsprung von 0xf3d)            
+; CheckHeatAndDC (Einsprung von 0xf3d)    
+; Prüfe Übertemperatur und DC Offset
+; Wenn gut, gehe zu 0xe61, sonst direkt weiter        
                 LISL 0                   ; 0e2e 68          ; Fülle unteres ISAR mit x0
                 LR   A,(IS)-             ; 0e2f 4e          ; Lade Akku ab Scratchpad 20 (dec ISAR)
                 SL   4                   ; 0e30 15          ; Schiebe 4 links
@@ -2986,7 +2992,8 @@ Ae1e:           LISU 4                   ; 0e1e 64          ; Fülle oberes ISAR 
                 LR   A,(IS)-             ; 0e33 4e          ; Lade Akku ab Scratchpad 27 (dec ISAR)
                 NI   $10                 ; 0e34 21 10       ; nur bit 4     (DC Signal)
                 BF   $4                  ; 0e36 94 2a       ; Branch wenn nicht null (DC Signal = 1) um +0x2a nach 0xe61 (wenn H und DC ok)
-; Wenn zu heiss oder DC erkannt, Lautsprecher trennen
+; Wenn zu heiss oder DC erkannt, Lautsprecher trennen, PH aus und Endstufe aus
+; Merker für Lautsprecher aus setzen, 1s warten, Endstufe wieder ein, 2 sek warten, zurück zum Beginn
 Ae38:           INS  1                   ; 0e38 a1          ; Lade invertierten Port 1 (I/O) in Akku
                 NI   $f8                 ; 0e39 21 f8       ; lösche erste 3 bit
                 INC                      ; 0e3b 1f          ; Inkrementiere Akku
@@ -3008,11 +3015,13 @@ Ae38:           INS  1                   ; 0e38 a1          ; Lade invertierten 
                 OUT  $5                  ; 0e53 27 05       ; Schaltet Port 5 die Endstufe ein (Bit 2) PONL / PONR
                 LR   A,(IS)              ; 0e55 4c          ; Lade Akku ab Scratchpad 46
                 NI   $fe                 ; 0e56 21 fe       ; Lösche bit 0
-                LR   (IS),A              ; 0e58 5c          ; Speichere Akku in Scratchpad 46
+                LR   (IS),A              ; 0e58 5c          ; Speichere Akku in Scratchpad 46 -> Protection nicht OK
                 PI   $4f96               ; 0e59 28 4f 96    ; PC1 = 0xe5c, Call Subroutine 0xf96 -> Delay1Sec
                 PI   $4f96               ; 0e5c 28 4f 96    ; PC1 = 0xe5f, Call Subroutine 0xf96 -> Delay1Sec
                 BF   $0                  ; 0e5f 90 be       ; Branch immer um -66 bytes nach 0xe1e  -> HandleProtection
 ; DC ok und nicht überhitzt
+; Wenn Protection ok bit schon 1, direkt nach Lautprecher ein
+; Sonst 2 sek warten, dann PH ein und weiter zu Lautsprecher ein
 Ae61:           LISU 4                   ; 0e61 64          ; Fülle oberes ISAR mit 4x
                 LIS  $1                  ; 0e62 71          ; Akku = 0x01
                 NS   (IS)                ; 0e63 fc          ; Akku &= Scratchpad 46 (nicht sicher)
@@ -3024,6 +3033,7 @@ Ae61:           LISU 4                   ; 0e61 64          ; Fülle oberes ISAR 
                 PI   $4f96               ; 0e6d 28 4f 96    ; PC1 = 0xe70, Call Subroutine 0xf96 -> Delay1Sec
                 LIS  $1                  ; 0e70 71          ; Akku = 0x01
                 OUT  $5                  ; 0e71 27 05       ; Schaltet Port 5 Kopfhörer ein (Bit 0: PH)
+; Jump hierher wenn Protection okay
 ; Schalte Speaker A anhand Knopf A
 Ae73:           INS  1                   ; 0e73 a1          ; Lade invertierten Port 1 (I/O) in Akku
                 NI   $f8                 ; 0e74 21 f8       ; lösche erste 3 bit

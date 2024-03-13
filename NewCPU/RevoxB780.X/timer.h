@@ -17,6 +17,8 @@ extern "C"
 #define TICK_128_US TCNT1     // 128us Tick (8MHz / 1024)
 
 #define TICKS_500ms (unsigned short)(500000/TICK_TIME_US)   // 3906
+#define TICKS_1s (unsigned short)(1000000/TICK_TIME_US)   // 7812
+#define TICKS_2s (unsigned short)(1000000/TICK_TIME_US)   // 15625
 
 
 #ifdef	__cplusplus

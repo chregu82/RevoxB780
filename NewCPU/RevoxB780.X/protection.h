@@ -8,15 +8,21 @@
 #ifndef PROTECTION_H
 #define	PROTECTION_H
 
-#include "ports.h"
-#include "timer.h"
-
-
 #ifdef	__cplusplus
 extern "C" {
 #endif
+    
+#include "ports.h"
+#include "timer.h"
+    
+typedef enum ProtStateEnum
+{
+    PrStProtection,
+    PrStActivateAmp,
+    PrStActivateSpeaker
+} ProtStateEnum;
 
-void HandleProtection(InputsType* pInput, unsigned char* pProtOk, unsigned short* pTmr);
+void HandleProtection(InputsType* pInput, ProtStateEnum* pProtState, unsigned short* pTmr, unsigned char* pSpkOnA, unsigned char* pSpkOnB);
 
 #ifdef	__cplusplus
 }

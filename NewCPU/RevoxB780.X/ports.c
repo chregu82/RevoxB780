@@ -34,8 +34,7 @@ void WriteToDisplay(unsigned char pin, unsigned short data, unsigned char loadbi
     PORTA |= 0b00000111;  // set A, B, C to high -> enable clock
     bitset(PORTD, OUT_PD7_S); // set S to high too
     bitset(PORTB, OUT_PB2_STROBE); // set strobe to high
-    PORTB &= 0b00000111;  // clear all DLEN and STROBE
-    bitset(PORTB, OUT_PB4_DLEN4);     // disable output multiplexer enable
+    PORTB &= 0b00010111;  // clear all DLEN and STROBE
     bitclr(PORTD, OUT_PD4_DATA);      // set startbit (0)
     bitset(PORTB, pin);       // enable SAA1060
     DoClock();
@@ -53,7 +52,7 @@ void WriteToDisplay(unsigned char pin, unsigned short data, unsigned char loadbi
     DoClock();
     // load pulse
     _delay_us(2);
-    PORTB &= 0b00000111;  // clear all DLEN
+    PORTB &= 0b00010111;  // clear all DLEN
     bitclr(PORTD, OUT_PD4_DATA);      // reset data pin
     DoClock();
     // cleanup

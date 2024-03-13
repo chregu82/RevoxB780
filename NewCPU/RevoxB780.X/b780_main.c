@@ -27,8 +27,10 @@ RecPlayEnum RecPlayKey; // Pressed key for Play or Record
 unsigned char RecPlayLocked = 0;        // Lock other rec/play key pressed while another key is pressed
 
 // Protection
-unsigned char ProtectionOk = 0;
+ProtStateEnum ProtectionState = PrStProtection;
 unsigned short ProtTmr;
+unsigned char SpkOnA = 0;
+unsigned char SpkOnB = 0;
 
 int main(void)
 {
@@ -44,7 +46,7 @@ int main(void)
     DDRE = 0;     // inputs only
     
     // init stereo signal
-    PORTB = (1<<OUT_PB0_ST) | (1<<OUT_PB2_STROBE);
+    PORTB = (1<<OUT_PB0_ST) | (1<<OUT_PB2_STROBE) | (1<<OUT_PB4_DLEN4);
     // DON is already high with pull-up
     PORTD = (1<<OUT_PD0_NF1) | (1<<OUT_PD1_NF2)  | (1<<OUT_PD2_NF3) | (1<<OUT_PD3_NF4) | (1<<OUT_PD5_PONLR) | (1<<OUT_PD6_PH) | (1<<OUT_PD7_S);     // NF1-4 are high, PON is enabled (1), PH is disabled (1), S is high
     PORTA = (1<<OUT_PA4_NF5) | (1<<OUT_PA5_NF6) | (1<<OUT_PA6_NF7) | (1<<OUT_PA7_NF8);      // NF5-8 are high
@@ -142,6 +144,9 @@ int main(void)
             RecTimeoutCnt = 0;  // init counter
             if (RecordSource == RecPlayUndef) DisplayTuningRecordPlay(0, 0, 0, 6, 0, PlaySource);   // Dash char for record
         }
+        
+        // Speaker Protection
+        HandleProtection(&Inputs[0], &ProtectionState, &ProtTmr, &SpkOnA, &SpkOnB);
         
         nbrTrue = 0;
         for (unsigned char k=0; k<sizeof(Inputs[0]);k++)
