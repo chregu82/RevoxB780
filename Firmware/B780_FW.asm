@@ -1721,7 +1721,7 @@ A748:           JMP  $4dc6               ; 0748 29 4d c6
 A761:           LR   A,(IS)+             ; 0761 4d          ; Lade Akku ab Scratchpad 25, inc ISAR
                 SL   1                   ; 0762 13          ; Schiebe 1 links
                 SL   1                   ; 0763 13          ; Schiebe 1 links
-                BT   1                   ; 0764 81 06       ; Branch wenn positiv (bit 7 = 0, STLY = 0) um +6 nach 0x76b
+                BT   1                   ; 0764 81 06       ; Branch wenn positiv (bit 7 = 0, STLY stereo only = 0) um +6 nach 0x76b
                 LR   A,(IS)              ; 0766 4c          ; Lade Akku ab Scratchpad 26
                 SL   1                   ; 0767 13          ; Schiebe 1 links
                 SL   1                   ; 0768 13          ; Schiebe 1 links
@@ -2507,7 +2507,7 @@ Ab96:           LISL 4                   ; 0b96 6c          ; Fülle unteres ISAR
                 BF   $1                  ; 0b9f 91 04       ; Branch wenn negativ (bit 7 = 1) um +4 nach 0xba4 
                 JMP  $4c77               ; 0ba1 29 4c 77
 Aba4:           LIS  $1                  ; 0ba4 71          ; Akku = 0x01
-                NS   $6                  ; 0ba5 f6
+                NS   $6                  ; 0ba5 f6          ; Akku &= Scratchpad 6
                 BT   4                   ; 0ba6 84 11
 Aba8:           LIS  $1                  ; 0ba8 71          ; Akku = 0x01
                 NS   $4                  ; 0ba9 f4          ; Akku &= Scratchpad 4
@@ -2517,7 +2517,7 @@ Aba8:           LIS  $1                  ; 0ba8 71          ; Akku = 0x01
                 NI   $fe                 ; 0bad 21 fe       ; Lösche bit 0
                 LR   $6                  ; 0baf 56          ; Speichere Akku in Scratchpad 6
                 
-                NI   $2                  ; 0bb0 21 02
+                NI   $2                  ; 0bb0 21 02       ; Akku &= 0x02 (behalte bit 1)
                 BF   $4                  ; 0bb2 94 05       ; Branch wenn nicht null um +0x05 nach 0xbb8
                 DI                       ; 0bb4 1a          ; Disable Interrupt
                 LIS  $0                  ; 0bb5 70          ; Akku = 0
@@ -2607,14 +2607,14 @@ Ac10:           LIS  $0                  ; 0c10 70          ; Akku = 0
                 JMP  $4d51               ; 0c25 29 4d 51
 Ac28:           EI                       ; 0c28 1b
 Ac29:           PI   $4161               ; 0c29 28 41 61    ; PC1 = 0xc2c, Call Subroutine 0x161 -> CheckForTunerElseIncPC
-                BF   $0                  ; 0c2c 90 04       ; Tuner aktiv
-                JMP  $4cdb               ; 0c2e 29 4c db    ; Tuner inaktiv
-
+                BF   $0                  ; 0c2c 90 04       ; Tuner aktiv, gehe zu 0xc31
+                JMP  $4cdb               ; 0c2e 29 4c db    ; Tuner inaktiv, gehe zu 0xcdb
+; Tuner aktiv
 Ac31:           LISU 4                   ; 0c31 64          ; Fülle oberes ISAR mit 4x
                 LISL 7                   ; 0c32 6f          ; Fülle unteres ISAR mit x7
                 LIS  $1                  ; 0c33 71          ; Akku = 0x01
                 NS   (IS)                ; 0c34 fc          ; Akku &= Scratchpad 47
-                BF   $4                  ; 0c35 94 13       ; Branch wenn nicht null um +13 nach 0xc49
+                BF   $4                  ; 0c35 94 13       ; Branch wenn nicht null (bit 0 in Scratchpad 47 gesetzt) um +13 nach 0xc49
                 INS  1                   ; 0c37 a1          ; Lade invertierten Port 1 (I/O) in Akku
                 NI   $f8                 ; 0c38 21 f8       ; lösche erste 3 bit
                 OUTS 1                   ; 0c3a b1          ; Schreibe Port 1 (xxxx x000), wird invertiert ausgegeben   -> MUT (Muting ON)
@@ -2625,39 +2625,40 @@ Ac31:           LISU 4                   ; 0c31 64          ; Fülle oberes ISAR 
                 PI   $45bf               ; 0c42 28 45 bf    ; PC1 = 0xc45, Call Subroutine 0x5bf -> LoadHighToOutputMultiplexer
                 LR   A,(IS)              ; 0c45 4c          ; Lade Akku ab Scratchpad 47
                 OI   $21                 ; 0c46 22 21       ; Setze bit 1 und 5
-                LR   (IS),A              ; 0c48 5c          ; Speicher Scratchpad 47
+                LR   (IS),A              ; 0c48 5c          ; Speichere Scratchpad 47
 
-Ac49:           JMP  $4d35               ; 0c49 29 4d 35
+Ac49:           JMP  $4d35               ; 0c49 29 4d 35    ; Gehe zu 0xd35
                 LISU 2                   ; 0c4c 62          ; Fülle oberes ISAR mit 2x
                 LISL 5                   ; 0c4d 6d          ; Fülle unteres ISAR mit x5
                 LR   A,(IS)              ; 0c4e 4c          ; Lade Akku ab Scratchpad 25
                 SL   1                   ; 0c4f 13          ; Schiebe 1 links
                 SL   1                   ; 0c50 13          ; Schiebe 1 links
-                BF   $1                  ; 0c51 91 25       ; Branch wenn negativ (bit 7 = 1, STLY = 1) um +25 nach 0xc77
+                BF   $1                  ; 0c51 91 25       ; Branch wenn negativ (bit 7 = 1, STLY stereo only = 1) um +25 nach 0xc77
                 LISL 4                   ; 0c53 6c          ; Fülle unteres ISAR mit x4
-                LR   A,(IS)-             ; 0c54 4e
-                SL   1                   ; 0c55 13
-                SL   1                   ; 0c56 13
-                BF   $1                  ; 0c57 91 7b       ; Branch wenn negativ (bit 7 = 1) um +7b nach 0xcd3
+                LR   A,(IS)-             ; 0c54 4e          ; Lade Akku ab Scratchpad 24, dec ISAR
+                SL   1                   ; 0c55 13          ; Schiebe 1 links
+                SL   1                   ; 0c56 13          ; Schiebe 1 links
+                BF   $1                  ; 0c57 91 7b       ; Branch wenn negativ (bit 7 = 1, THSTA = 1) um +7b nach 0xcd3
                 LIS  $1                  ; 0c59 71          ; Akku = 0x01
-                NS   $6                  ; 0c5a f6
-                BT   4                   ; 0c5b 84 11
+                NS   $6                  ; 0c5a f6          ; Akku &= Scratchpad 6
+                BT   4                   ; 0c5b 84 11       ; Branch wenn null (bit 0 in Scratchpad 6 = 0) um +11 nach 0xc6d
+; Loop solange bit 0 in Scratchpad 4 gesetzt
 Ac5d:           LIS  $1                  ; 0c5d 71          ; Akku = 0x01
                 NS   $4                  ; 0c5e f4          ; Akku &= Scratchpad 4
-                BF   $4                  ; 0c5f 94 fd
+                BF   $4                  ; 0c5f 94 fd       ; Branch wenn nicht null (bit 0 in Scratchpad 4 gesetzt) um -3 nach 0xc5d
 ; Lösche bit 0 in Scratchpad 6
                 LR   A,$6                ; 0c61 46          ; Lade Scratchpad 6 in Akku
                 NI   $fe                 ; 0c62 21 fe       ; Lösche bit 0
                 LR   $6                  ; 0c64 56          ; Speichere Akku in Scratchpad 6
                 
-                NI   $2                  ; 0c65 21 02
-                BF   $4                  ; 0c67 94 05
+                NI   $2                  ; 0c65 21 02       ; Akku &= 0x02 (behalte bit 1)
+                BF   $4                  ; 0c67 94 05       ; Branch wenn nicht null (bit 1 in Scratchpad 6 gesetzt) um +5 nach 0xc6d
                 DI                       ; 0c69 1a          ; Disable Interrupt
                 LIS  $0                  ; 0c6a 70          ; Akku = 0
                 OUT  $6                  ; 0c6b 27 06       ; Schreibe Akku (0) in Port 6 (Interrupt Control Port) -> Interrupts disabled
 Ac6d:           INS  0                   ; 0c6d a0          ; Lade Port 0 in Akku
-                NI   $fb                 ; 0c6e 21 fb
-                OUTS 0                   ; 0c70 b0
+                NI   $fb                 ; 0c6e 21 fb       ; Lösche bit 2
+                OUTS 0                   ; 0c70 b0          ; Ausgang ST wird high
                 LR   A,$5                ; 0c71 45
                 OI   $8                  ; 0c72 22 08
                 LR   $5                  ; 0c74 55
@@ -2734,6 +2735,7 @@ Acd3:           LR   A,(IS)              ; 0cd3 4c
                 BT   1                   ; 0cd6 81 a0
                 JMP  $4c59               ; 0cd8 29 4c 59
 
+; Tuner inaktiv
 Acdb:           LISU 4                   ; 0cdb 64          ; Fülle oberes ISAR mit 4x
                 LISL 7                   ; 0cdc 6f          ; Fülle unteres ISAR mit x7
                 LIS  $1                  ; 0cdd 71          ; Akku = 0x01
@@ -2747,10 +2749,10 @@ Acdb:           LISU 4                   ; 0cdb 64          ; Fülle oberes ISAR 
                 NI   $fe                 ; 0ce9 21 fe       ; Lösche bit 0
                 LR   (IS),A              ; 0ceb 5c          ; Speichere Scratchpad 47
 Acec:           LR   A,$6                ; 0cec 46          ; Lade Scratchpad 6 in Akku
-                NI   $10                 ; 0ced 21 10       ; Akku &= 0x10
+                NI   $10                 ; 0ced 21 10       ; Akku &= 0x10 (behalte bit 4)
                 BF   $4                  ; 0cef 94 13       ; Branch wenn nicht null um +13 nach 0xd03
                 LR   A,(IS)              ; 0cf1 4c          ; Lade Akku ab Scratchpad 47
-                NI   $20                 ; 0cf2 21 20       ; Akku &= 0x20 (bit 5)
+                NI   $20                 ; 0cf2 21 20       ; Akku &= 0x20 (behalte bit 5)
                 BF   $4                  ; 0cf4 94 0e       ; Branch wenn nicht null um +e nach 0xd03
                 INS  1                   ; 0cf6 a1          ; Lade invertierten Port 1 (I/O) in Akku
                 NI   $f8                 ; 0cf7 21 f8       ; lösche erste 3 bit
@@ -2762,28 +2764,29 @@ Acec:           LR   A,$6                ; 0cec 46          ; Lade Scratchpad 6 
                 LR   (IS),A              ; 0d02 5c          ; Speichere Scratchpad 47
 
 Ad03:           PI   $4161               ; 0d03 28 41 61    ; PC1 = 0xd06, Call Subroutine 0x161 -> CheckForTunerElseIncPC
-                BF   $0                  ; 0d06 90 06       ; Tuner aktiv
+                BF   $0                  ; 0d06 90 06       ; Tuner aktiv, Branch immer um +6 nach 0xd0d 
                 LI   $d7                 ; 0d08 20 d7       ; Tuner inaktiv: Akku = 0xd7
                 LR   $2                  ; 0d0a 52          ; Schreibe Akku (0xd7) in Scratchpad 2
-                BF   $0                  ; 0d0b 90 29
+                BF   $0                  ; 0d0b 90 29       ; Branch immer um +0x29 nach 0xd35 
+; Tuner aktiv
 Ad0d:           LIS  $1                  ; 0d0d 71          ; Akku = 0x01
-                NS   $6                  ; 0d0e f6
-                BF   $4                  ; 0d0f 94 1e
+                NS   $6                  ; 0d0e f6          ; Akku &= Scratchpad 6
+                BF   $4                  ; 0d0f 94 1e       ; Branch wenn nicht null (bit 0 in Scratchpad 6 gesetzt) um +1e nach 0xd2e
                 LISU 7                   ; 0d11 67          ; Fülle oberes ISAR mit 7x
                 LISL 1                   ; 0d12 69          ; Fülle unteres ISAR mit x1
                 LIS  $0                  ; 0d13 70          ; Akku = 0
-                LR   (IS)-,A             ; 0d14 5e
-                LR   (IS),A              ; 0d15 5c
+                LR   (IS)-,A             ; 0d14 5e          ; Scratchpad 71 = 0
+                LR   (IS),A              ; 0d15 5c          ; Scratchpad 70 = 0
                 LISU 6                   ; 0d16 66          ; Fülle oberes ISAR mit 6x
-                LR   (IS)+,A             ; 0d17 5d
-                LR   (IS),A              ; 0d18 5c
+                LR   (IS)+,A             ; 0d17 5d          ; Scratchpad 60 = 0
+                LR   (IS),A              ; 0d18 5c          ; Scratchpad 61 = 0
 ; Setze bit 0 in Scratchpad 6
                 LR   A,$6                ; 0d19 46          ; Lade Scratchpad 6 in Akku
                 OI   $1                  ; 0d1a 22 01       ; Setze bit 0
                 LR   $6                  ; 0d1c 56          ; Speichere Akku in Scratchpad 6
                 
-                NI   $2                  ; 0d1d 21 02
-                BF   $4                  ; 0d1f 94 0e
+                NI   $2                  ; 0d1d 21 02       ; Akku &= 0x02, lösche alles ausser bit 1
+                BF   $4                  ; 0d1f 94 0e       ; Branch wenn nicht null (bit 1 in Scratchpad 6 gesetzt) um +0e nach 0xd2e
                 DI                       ; 0d21 1a          ; Disable Interrupt
                 LIS  $0                  ; 0d22 70          ; Akku = 0
                 LR   $8                  ; 0d23 58          ; Scratchpad 8 = 0x00

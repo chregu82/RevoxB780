@@ -56,7 +56,7 @@ void WriteToDisplay(unsigned char pin, unsigned short data, unsigned char loadbi
     bitclr(PORTD, OUT_PD4_DATA);      // reset data pin
     DoClock();
     // cleanup
-    PORTA &= 0b1111000;  // set A, B, C to low
+    PORTA &= 0b11111000;  // set A, B, C to low
     bitclr(PORTD, OUT_PD7_S); // set S to low too
 }
 
