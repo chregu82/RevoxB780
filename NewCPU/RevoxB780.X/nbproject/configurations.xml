@@ -11,6 +11,7 @@
       <itemPath>recplay.h</itemPath>
       <itemPath>protection.h</itemPath>
       <itemPath>timer.h</itemPath>
+      <itemPath>tuner.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -24,6 +25,7 @@
       <itemPath>remmem.c</itemPath>
       <itemPath>recplay.c</itemPath>
       <itemPath>protection.c</itemPath>
+      <itemPath>tuner.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -845,6 +847,8 @@
         <property key="periphComp5.gte" value="gt"/>
         <property key="periphComp6.gte" value="gt"/>
         <property key="poweroptions.powerenable" value="false"/>
+        <property key="programmerToGoFilePath"
+                  value="C:/Users/lehne/OneDrive/Dokumente/C_Proj/RevoxB780/NewCPU/RevoxB780.X/debug/default/RevoxB780_ptg"/>
         <property key="programmerToGoImageName" value="RevoxB780_ptg"/>
         <property key="programoptions.donoteraseauxmem" value="false"/>
         <property key="programoptions.eraseb4program" value="true"/>

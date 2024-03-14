@@ -51,17 +51,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=b780_main.c ports.c remmem.c recplay.c protection.c
+SOURCEFILES_QUOTED_IF_SPACED=b780_main.c ports.c remmem.c recplay.c protection.c tuner.c
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/b780_main.o ${OBJECTDIR}/ports.o ${OBJECTDIR}/remmem.o ${OBJECTDIR}/recplay.o ${OBJECTDIR}/protection.o
-POSSIBLE_DEPFILES=${OBJECTDIR}/b780_main.o.d ${OBJECTDIR}/ports.o.d ${OBJECTDIR}/remmem.o.d ${OBJECTDIR}/recplay.o.d ${OBJECTDIR}/protection.o.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/b780_main.o ${OBJECTDIR}/ports.o ${OBJECTDIR}/remmem.o ${OBJECTDIR}/recplay.o ${OBJECTDIR}/protection.o ${OBJECTDIR}/tuner.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/b780_main.o.d ${OBJECTDIR}/ports.o.d ${OBJECTDIR}/remmem.o.d ${OBJECTDIR}/recplay.o.d ${OBJECTDIR}/protection.o.d ${OBJECTDIR}/tuner.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/b780_main.o ${OBJECTDIR}/ports.o ${OBJECTDIR}/remmem.o ${OBJECTDIR}/recplay.o ${OBJECTDIR}/protection.o
+OBJECTFILES=${OBJECTDIR}/b780_main.o ${OBJECTDIR}/ports.o ${OBJECTDIR}/remmem.o ${OBJECTDIR}/recplay.o ${OBJECTDIR}/protection.o ${OBJECTDIR}/tuner.o
 
 # Source Files
-SOURCEFILES=b780_main.c ports.c remmem.c recplay.c protection.c
+SOURCEFILES=b780_main.c ports.c remmem.c recplay.c protection.c tuner.c
 
 
 
@@ -118,6 +118,12 @@ ${OBJECTDIR}/protection.o: protection.c  .generated_files/flags/default/349fe089
 	@${RM} ${OBJECTDIR}/protection.o 
 	${MP_CC} $(MP_EXTRA_CC_PRE) -mcpu=$(MP_PROCESSOR_OPTION) -c  -D__DEBUG=1 -g -DDEBUG  -gdwarf-2  -x c -D__$(MP_PROCESSOR_OPTION)__   -mdfp="${DFP_DIR}/xc8"  -Wl,--gc-sections -O1 -ffunction-sections -fdata-sections -fshort-enums -fno-common -funsigned-char -funsigned-bitfields -Wall -DXPRJ_default=$(CND_CONF)  $(COMPARISON_BUILD)  -gdwarf-3 -mconst-data-in-progmem -mno-const-data-in-config-mapped-progmem     -MD -MP -MF "${OBJECTDIR}/protection.o.d" -MT "${OBJECTDIR}/protection.o.d" -MT ${OBJECTDIR}/protection.o -o ${OBJECTDIR}/protection.o protection.c 
 	
+${OBJECTDIR}/tuner.o: tuner.c  .generated_files/flags/default/ac86cabde7f1cc7c87deaa7271891ae4dfa9c9ef .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/tuner.o.d 
+	@${RM} ${OBJECTDIR}/tuner.o 
+	${MP_CC} $(MP_EXTRA_CC_PRE) -mcpu=$(MP_PROCESSOR_OPTION) -c  -D__DEBUG=1 -g -DDEBUG  -gdwarf-2  -x c -D__$(MP_PROCESSOR_OPTION)__   -mdfp="${DFP_DIR}/xc8"  -Wl,--gc-sections -O1 -ffunction-sections -fdata-sections -fshort-enums -fno-common -funsigned-char -funsigned-bitfields -Wall -DXPRJ_default=$(CND_CONF)  $(COMPARISON_BUILD)  -gdwarf-3 -mconst-data-in-progmem -mno-const-data-in-config-mapped-progmem     -MD -MP -MF "${OBJECTDIR}/tuner.o.d" -MT "${OBJECTDIR}/tuner.o.d" -MT ${OBJECTDIR}/tuner.o -o ${OBJECTDIR}/tuner.o tuner.c 
+	
 else
 ${OBJECTDIR}/b780_main.o: b780_main.c  .generated_files/flags/default/ccf59d59b4d05f03d5f55b2a6dcb6e82ca374a83 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}" 
@@ -148,6 +154,12 @@ ${OBJECTDIR}/protection.o: protection.c  .generated_files/flags/default/401709b2
 	@${RM} ${OBJECTDIR}/protection.o.d 
 	@${RM} ${OBJECTDIR}/protection.o 
 	${MP_CC} $(MP_EXTRA_CC_PRE) -mcpu=$(MP_PROCESSOR_OPTION) -c  -x c -D__$(MP_PROCESSOR_OPTION)__   -mdfp="${DFP_DIR}/xc8"  -Wl,--gc-sections -O1 -ffunction-sections -fdata-sections -fshort-enums -fno-common -funsigned-char -funsigned-bitfields -Wall -DXPRJ_default=$(CND_CONF)  $(COMPARISON_BUILD)  -gdwarf-3 -mconst-data-in-progmem -mno-const-data-in-config-mapped-progmem     -MD -MP -MF "${OBJECTDIR}/protection.o.d" -MT "${OBJECTDIR}/protection.o.d" -MT ${OBJECTDIR}/protection.o -o ${OBJECTDIR}/protection.o protection.c 
+	
+${OBJECTDIR}/tuner.o: tuner.c  .generated_files/flags/default/5d179489250c75665dfc7f8285d8edf4729908c9 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/tuner.o.d 
+	@${RM} ${OBJECTDIR}/tuner.o 
+	${MP_CC} $(MP_EXTRA_CC_PRE) -mcpu=$(MP_PROCESSOR_OPTION) -c  -x c -D__$(MP_PROCESSOR_OPTION)__   -mdfp="${DFP_DIR}/xc8"  -Wl,--gc-sections -O1 -ffunction-sections -fdata-sections -fshort-enums -fno-common -funsigned-char -funsigned-bitfields -Wall -DXPRJ_default=$(CND_CONF)  $(COMPARISON_BUILD)  -gdwarf-3 -mconst-data-in-progmem -mno-const-data-in-config-mapped-progmem     -MD -MP -MF "${OBJECTDIR}/tuner.o.d" -MT "${OBJECTDIR}/tuner.o.d" -MT ${OBJECTDIR}/tuner.o -o ${OBJECTDIR}/tuner.o tuner.c 
 	
 endif
 

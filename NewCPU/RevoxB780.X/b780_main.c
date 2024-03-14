@@ -11,6 +11,7 @@
 #include "remmem.h"
 #include "recplay.h"
 #include "protection.h"
+#include "tuner.h"
 
 //////////////////
 // Declarations //
@@ -30,6 +31,9 @@ unsigned char RecPlayLocked = 0;        // Lock other rec/play key pressed while
 ProtStateEnum ProtectionState = PrStProtection;
 unsigned short ProtTmr;
 unsigned char SpkOn[2] = {0, 0};
+
+// Tuner
+unsigned char oldDeemphasis = 1;    // Input high if not pressed
 
 int main(void)
 {
@@ -54,11 +58,15 @@ int main(void)
     DisplayFreq(0, 0, 0, 0, 0, 0);
     DisplayTuningRecordPlay(0, 0, 0, 0, 0, 0);
     
-    // Init output multiplexer (set everything to 0)
-    for (char i=0; i<=7; i++)
-    {
-        LoadOutputMultiplexer(i, 0);
-    }
+    // Init output multiplexer
+    LoadOutputMultiplexer(Mul_Out_STFI, 0);
+    LoadOutputMultiplexer(Mul_Out_MC, 0);
+    LoadOutputMultiplexer(Mul_Out_25us, 1);     // Needs to be low after SN7406
+    LoadOutputMultiplexer(Mul_Out_75us, 1);     // Needs to be low after SN7406
+    LoadOutputMultiplexer(Mul_Out_WW, 0);
+    LoadOutputMultiplexer(Mul_Out_SPB, 0);
+    LoadOutputMultiplexer(Mul_Out_SPA, 0);
+    LoadOutputMultiplexer(Mul_Out_MUT, 0);
     
     // Load play source from eeprom or initialize
     PlaySource = EEPROM_read(EepromPlay);
@@ -146,6 +154,9 @@ int main(void)
         
         // Speaker Protection
         HandleProtection(&Inputs[0], &ProtectionState, &ProtTmr, SpkOn);
+        
+        // Tuner
+        SetDeemphasis(Inputs[0].D75us, &oldDeemphasis);
         
         nbrTrue = 0;
         for (unsigned char k=0; k<sizeof(Inputs[0]);k++)
