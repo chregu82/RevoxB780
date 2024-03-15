@@ -634,13 +634,14 @@ A1e7:           LR   (IS),A              ; 01e7 5c          ; Speichere Akku in 
                 LR   $2                  ; 020e 52          ; Schreibe Akku (0xb7) in Scratchpad 2
                 PK                       ; 020f 0c          ; Speichere PC0 (program counter) in PC1 (strack register) und springe zu Adresse in Scratchpad 12,13 (0x3b9 oder 0x80f)
                 
-; Subroutine
+; Subroutine ChangeTuningMode
                 LR   K,P                 ; 0210 08          ; Sichere PC1 (Stack register) in Scratchpad 12,13  (0x6ad oder 0x872 oder 0x91c)
                 LISU 2                   ; 0211 62          ; Fülle oberes ISAR mit 2x
                 LISL 1                   ; 0212 69          ; Fülle unteres ISAR mit x1
                 LR   A,(IS)              ; 0213 4c          ; Lade Akku ab Scratchpad 21
                 SL   1                   ; 0214 13          ; Schiebe 1 links
-                BT   1                   ; 0215 81 34       ; Branch wenn positiv (bit 7 = 0), CHTM = 0, um +34 nach 0x24a
+                BT   1                   ; 0215 81 34       ; Branch wenn positiv (bit 7 = 0), CHTM = 0 (Taste gedrückt), um +34 nach 0x24a
+                ; Taste nicht gedrückt
                 LR   A,$6                ; 0217 46          ; Lade Akku ab Scratchpad 6
                 SL   4                   ; 0218 15          ; Schiebe 4 links
                 BF   $1                  ; 0219 91 34       ; Branch wenn negativ (bit 7 = 1), Schratchpad 6, bit 3 war 1, um +34 nach 0x24e
@@ -2492,21 +2493,21 @@ Ab88:           LISL 1                   ; 0b88 69          ; Fülle unteres ISAR
                 LR   A,(IS)+             ; 0b89 4d          ; Lade Akku ab Scratchpad 21 (Inc ISAR)
                 SL   1                   ; 0b8a 13          ; Schiebe 1 links
                 SL   1                   ; 0b8b 13          ; Schiebe 1 links
-                BF   $1                  ; 0b8c 91 f8       ; Branch wenn negativ (bit 7 = 1) um -8 nach 0xb85  (Prüft bit 5 in Scratchpad 21)
+                BF   $1                  ; 0b8c 91 f8       ; Branch wenn negativ (P Pilot presend Signal = 1) um -8 nach 0xb85  (Prüft bit 5 in Scratchpad 21)
                 LR   A,(IS)              ; 0b8e 4c          ; Lade Akku ab Scratchpad 22
                 SL   1                   ; 0b8f 13          ; Schiebe 1 links
                 SL   1                   ; 0b90 13          ; Schiebe 1 links
-                BT   1                   ; 0b91 81 04       ; Branch wenn positiv (bit 7 = 0) um +4 nach 0xb96  (Prüft bit 5 in Scratchpad 22)
+                BT   1                   ; 0b91 81 04       ; Branch wenn positiv (MONO Signal = 0) um +4 nach 0xb96  (Prüft bit 5 in Scratchpad 22)
                 JMP  $4c53               ; 0b93 29 4c 53    ; Springe nach 0xc53
 Ab96:           LISL 4                   ; 0b96 6c          ; Fülle unteres ISAR mit x4
-                LR   A,(IS)-             ; 0b97 4e
-                SL   1                   ; 0b98 13
-                SL   1                   ; 0b99 13
-                BT   1                   ; 0b9a 81 09
-                LR   A,(IS)              ; 0b9c 4c
-                SL   1                   ; 0b9d 13
-                SL   1                   ; 0b9e 13
-                BF   $1                  ; 0b9f 91 04       ; Branch wenn negativ (bit 7 = 1) um +4 nach 0xba4 
+                LR   A,(IS)-             ; 0b97 4e          ; Lade Akku ab Scratchpad 24, dec ISAR
+                SL   1                   ; 0b98 13          ; Schiebe 1 links
+                SL   1                   ; 0b99 13          ; Schiebe 1 links
+                BT   1                   ; 0b9a 81 09       ; Branch wenn positiv (THSTA Signal = 0) um +9 nach 0xba4  (Prüft bit 5 in Scratchpad 24)       
+                LR   A,(IS)              ; 0b9c 4c          ; Lade Akku ab Scratchpad 23
+                SL   1                   ; 0b9d 13          ; Schiebe 1 links
+                SL   1                   ; 0b9e 13          ; Schiebe 1 links
+                BF   $1                  ; 0b9f 91 04       ; Branch wenn negativ (bit 7 = 1, MOFF = 1) um +4 nach 0xba4 
                 JMP  $4c77               ; 0ba1 29 4c 77
 Aba4:           LIS  $1                  ; 0ba4 71          ; Akku = 0x01
                 NS   $6                  ; 0ba5 f6          ; Akku &= Scratchpad 6
@@ -2525,11 +2526,11 @@ Aba8:           LIS  $1                  ; 0ba8 71          ; Akku = 0x01
                 LIS  $0                  ; 0bb5 70          ; Akku = 0
                 OUT  $6                  ; 0bb6 27 06       ; Schreibe Akku (0) in Port 6 (Interrupt Control Port) -> Interrupts disabled
 Abb8:           LISL 0                   ; 0bb8 68          ; Fülle unteres ISAR mit x0
-                LR   A,(IS)-             ; 0bb9 4e
-                SL   1                   ; 0bba 13
-                SL   1                   ; 0bbb 13
+                LR   A,(IS)-             ; 0bb9 4e          ; Lade Akku ab Scratchpad 20 (dec ISAR)
+                SL   1                   ; 0bba 13          ; Schiebe 1 links
+                SL   1                   ; 0bbb 13          ; Schiebe 1 links
                 LISU 4                   ; 0bbc 64          ; Fülle oberes ISAR mit 4x
-                BT   1                   ; 0bbd 81 14       ; Branch wenn positiv (bit 7 = 1) um +0x14 nach 0xbd2
+                BT   1                   ; 0bbd 81 14       ; Branch wenn positiv (bit 7 = 1, HBL = 1) um +0x14 nach 0xbd2
                 LIS  $2                  ; 0bbf 72          ; Akku = 0x02
                 NS   (IS)                ; 0bc0 fc          ; Akku &= Scratchpad 47
                 BF   $4                  ; 0bc1 94 21       ; Branch wenn nicht null um +0x21 nach 0xbe3
