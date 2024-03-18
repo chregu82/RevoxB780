@@ -21,12 +21,12 @@ void LoadOutputMultiplexer(MultiplexOutEnum outputNbr, unsigned char value)
     if (value) bitset(PORTD, OUT_PD4_DATA);
     else bitclr (PORTD, OUT_PD4_DATA);
     // toggle enable of IC4 (LS259) DLEN4
-    bitset(PORTB, OUT_PB4_DLEN4);
-    bitclr(PORTB, OUT_PB4_DLEN4);
-    bitset(PORTB, OUT_PB4_DLEN4);
+    bitset(PORTB, OUT_PB4_DLEN4_OUTMUL);
+    bitclr(PORTB, OUT_PB4_DLEN4_OUTMUL);
+    bitset(PORTB, OUT_PB4_DLEN4_OUTMUL);
 }
 
-void WriteToDisplay(unsigned char pin, unsigned short data, unsigned char loadbit)
+void WriteToSAA(unsigned char pin, unsigned short data, unsigned char loadbit)
 {
     // strobe is always high, if set to low, duration is about 5us
     // data is latched on positive edge of strobe pin
@@ -36,20 +36,32 @@ void WriteToDisplay(unsigned char pin, unsigned short data, unsigned char loadbi
     bitset(PORTB, OUT_PB2_STROBE); // set strobe to high
     PORTB &= 0b00010111;  // clear all DLEN and STROBE
     bitclr(PORTD, OUT_PD4_DATA);      // set startbit (0)
-    bitset(PORTB, pin);       // enable SAA1060
+    bitset(PORTB, pin);       // enable SAA
     DoClock();
     for (char i=0; i<16; i++)
     {
         // write data
-        if (data & 0x01) bitset(PORTD, OUT_PD4_DATA);
+        if (pin == OUT_PB5_DLEN3_TUNER)
+        {
+            if (data & 0x8000) bitset(PORTD, OUT_PD4_DATA);
+            else bitclr(PORTD, OUT_PD4_DATA);
+            data = data << 1; // next bit
+        }
+        else
+        {
+            if (data & 0x01) bitset(PORTD, OUT_PD4_DATA);
+            else bitclr(PORTD, OUT_PD4_DATA);
+            data = data >> 1; // next bit
+        }
+        DoClock();
+    }
+    // loadbit (SAA1060 display only)
+    if ((pin == OUT_PB7_DLEN1_DISP_LEFT) || (pin == OUT_PB6_DLEN2_DISP_RIGHT))
+    {
+        if (loadbit) bitset(PORTD, OUT_PD4_DATA);
         else bitclr(PORTD, OUT_PD4_DATA);
         DoClock();
-        data = data >> 1; // next bit
     }
-    // loadbit
-    if (loadbit) bitset(PORTD, OUT_PD4_DATA);
-    else bitclr(PORTD, OUT_PD4_DATA);
-    DoClock();
     // load pulse
     _delay_us(2);
     PORTB &= 0b00010111;  // clear all DLEN
@@ -65,8 +77,8 @@ void DisplayFreq(unsigned char On, unsigned char dig1, unsigned char dig2, unsig
     // Display off
     if (On == 0)
     {
-        WriteToDisplay(OUT_PB7_DLEN1, 0xFFFF, 0);
-        WriteToDisplay(OUT_PB7_DLEN1, 0xFFFF, 1);
+        WriteToSAA(OUT_PB7_DLEN1_DISP_LEFT, 0xFFFF, 0);
+        WriteToSAA(OUT_PB7_DLEN1_DISP_LEFT, 0xFFFF, 1);
         return;
     }
     
@@ -83,13 +95,13 @@ void DisplayFreq(unsigned char On, unsigned char dig1, unsigned char dig2, unsig
     dataA |= FreqHigh[dig2];
     if (dig1) bitclr(dataA, 7);   // 1
     else bitset(dataA, 7);
-    WriteToDisplay(OUT_PB7_DLEN1, dataA, 0);
+    WriteToSAA(OUT_PB7_DLEN1_DISP_LEFT, dataA, 0);
 
     dataB |= (FreqLow[dig5] << 8);
     dataB |= FreqHigh[dig3];
     if (dig3) bitclr(dataB, 12);   // Dot
     else bitset(dataB, 12);
-    WriteToDisplay(OUT_PB7_DLEN1, dataB, 1);
+    WriteToSAA(OUT_PB7_DLEN1_DISP_LEFT, dataB, 1);
 }
 
 void DisplayTuningRecordPlay(unsigned char Upper, unsigned char Mode, unsigned char Dolby, unsigned char Record, unsigned char Stereo, unsigned char Input)
@@ -117,7 +129,7 @@ void DisplayTuningRecordPlay(unsigned char Upper, unsigned char Mode, unsigned c
     // Stereo
     if (Stereo == 0) bitset(dataA, 15);
     // Record
-    WriteToDisplay(OUT_PB6_DLEN2, dataA, 0);
+    WriteToSAA(OUT_PB6_DLEN2_DISP_RIGHT, dataA, 0);
     
     // Tuning Mode (Memory)
     dataB |= TuningModeDisp[Mode];
@@ -127,7 +139,7 @@ void DisplayTuningRecordPlay(unsigned char Upper, unsigned char Mode, unsigned c
     dataB |= (RecordPlayDisp[Input] << 8);
     // Stereo
     if (Stereo == 0) bitset(dataB, 15);
-    WriteToDisplay(OUT_PB6_DLEN2, dataB, 1);
+    WriteToSAA(OUT_PB6_DLEN2_DISP_RIGHT, dataB, 1);
 }
 
 void ReadInputs(InputsType* Inputs)

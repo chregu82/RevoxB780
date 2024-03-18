@@ -31,10 +31,10 @@ extern "C" {
 #define OUT_PB1_DON PB1
 #define OUT_PB2_STROBE PB2
 #define OUT_PB3_DLEN5 PB3
-#define OUT_PB4_DLEN4 PB4
-#define OUT_PB5_DLEN3 PB5
-#define OUT_PB6_DLEN2 PB6
-#define OUT_PB7_DLEN1 PB7
+#define OUT_PB4_DLEN4_OUTMUL PB4
+#define OUT_PB5_DLEN3_TUNER PB5
+#define OUT_PB6_DLEN2_DISP_RIGHT PB6
+#define OUT_PB7_DLEN1_DISP_LEFT PB7
     
 //Port C
 #define IN_PC6_Mul8 PC6
@@ -57,9 +57,9 @@ extern "C" {
     
 typedef struct InputsType
 {
-    unsigned char H;    // Overtemperature
-    unsigned char DDE;  // Dolby Deemphasis
-    unsigned char HIBL; // High blend
+    unsigned char H;    // Overtemperature      -> done
+    unsigned char DDE;  // Dolby Deemphasis     -> obsolete
+    unsigned char HIBL; // High blend           
     unsigned char STME; // Store Memory
     unsigned char KS8;  // Key 8
     unsigned char RECOFF;   // Record output off
@@ -214,7 +214,7 @@ static const unsigned char RecordPlayDisp[7] = {
 };
 
 void LoadOutputMultiplexer(MultiplexOutEnum outputNbr, unsigned char value);
-void WriteToDisplay(unsigned char pin, unsigned short data, unsigned char loadbit);
+void WriteToSAA(unsigned char pin, unsigned short data, unsigned char loadbit);
 void DisplayFreq(unsigned char On, unsigned char dig1, unsigned char dig2, unsigned char dig3, unsigned char dig4, unsigned char dig5);
 void DisplayTuningRecordPlay(unsigned char Upper, unsigned char Mode, unsigned char Dolby, unsigned char Record, unsigned char Stereo, unsigned char Input);
 

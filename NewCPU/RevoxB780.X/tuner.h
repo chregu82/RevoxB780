@@ -12,8 +12,13 @@
 extern "C"
 {
 #endif
+    
+#define FREQ_DIV    25      // Frequency interval in kHz
+#define FREQ_OFFSET 11000   // Frequency offset 11MHz
 
 void SetDeemphasis(unsigned char key, unsigned char* oldValue);
+void SetStereoFilter(unsigned char key, unsigned char* oldValue);
+void TuneToFreq(unsigned long Freq);
 
 
 #ifdef	__cplusplus

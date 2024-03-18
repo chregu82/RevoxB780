@@ -34,6 +34,8 @@ unsigned char SpkOn[2] = {0, 0};
 
 // Tuner
 unsigned char oldDeemphasis = 1;    // Input high if not pressed
+unsigned char oldHighBlend = 0;    // do nothing if already pressed
+unsigned char InitTuner = 1;
 
 int main(void)
 {
@@ -49,7 +51,7 @@ int main(void)
     DDRE = 0;     // inputs only
     
     // init stereo signal
-    PORTB = (1<<OUT_PB0_ST) | (1<<OUT_PB2_STROBE) | (1<<OUT_PB4_DLEN4);
+    PORTB = (1<<OUT_PB0_ST) | (1<<OUT_PB2_STROBE) | (1<<OUT_PB4_DLEN4_OUTMUL);
     // DON is already high with pull-up
     PORTD = (1<<OUT_PD0_NF1) | (1<<OUT_PD1_NF2)  | (1<<OUT_PD2_NF3) | (1<<OUT_PD3_NF4) | (1<<OUT_PD5_PONLR) | (1<<OUT_PD6_PH) | (1<<OUT_PD7_S);     // NF1-4 are high, PON is enabled (1), PH is disabled (1), S is high
     PORTA = (1<<OUT_PA4_NF5) | (1<<OUT_PA5_NF6) | (1<<OUT_PA6_NF7) | (1<<OUT_PA7_NF8);      // NF5-8 are high
@@ -66,7 +68,7 @@ int main(void)
     LoadOutputMultiplexer(Mul_Out_WW, 0);
     LoadOutputMultiplexer(Mul_Out_SPB, 0);
     LoadOutputMultiplexer(Mul_Out_SPA, 0);
-    LoadOutputMultiplexer(Mul_Out_MUT, 0);
+    LoadOutputMultiplexer(Mul_Out_MUT, 1);
     
     // Load play source from eeprom or initialize
     PlaySource = EEPROM_read(EepromPlay);
@@ -157,6 +159,13 @@ int main(void)
         
         // Tuner
         SetDeemphasis(Inputs[0].D75us, &oldDeemphasis);
+        SetStereoFilter(Inputs[0].HIBL, &oldHighBlend);
+        
+        if (InitTuner)
+          {
+            InitTuner = 0;
+            TuneToFreq(97300);
+          }
         
         nbrTrue = 0;
         for (unsigned char k=0; k<sizeof(Inputs[0]);k++)
