@@ -18,10 +18,17 @@ typedef enum EepromLayoutEnum
 {
     EepromPlay,
     EepromRecord,
+    EepromLowerUpper,
+    EepromLastMemory,
+      
+    EepromLastFreq = 40,    // unsigned long
+    EepromFreqMem = 44,     // unsigned long
 } EepromLayoutEnum;
 
 unsigned char EEPROM_read(unsigned short addr);
+unsigned long EEPROM_read_long(unsigned short addr);
 void EEPROM_write(unsigned short addr, unsigned char data);
+void EEPROM_write_long(unsigned short addr, unsigned long data);
 
 #ifdef	__cplusplus
 }

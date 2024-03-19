@@ -24,3 +24,23 @@ void EEPROM_write(unsigned short addr, unsigned char data)
     /* Start eeprom write by setting EEPE */
     EECR |= (1<<EEPE);
 }
+
+unsigned long EEPROM_read_long(unsigned short addr)
+{
+    unsigned long value;
+    unsigned char* pVal = (unsigned char*)&value;
+    for (unsigned char i=0; i<4; i++)
+    {
+        pVal[i] = EEPROM_read(addr+i);
+    }
+    return value;
+}
+
+void EEPROM_write_long(unsigned short addr, unsigned long data)
+{
+    unsigned char* pVal = (unsigned char*)&data;
+    for (unsigned char i=0; i<4; i++)
+    {
+        EEPROM_write(addr+i, pVal[i]);
+    }
+}

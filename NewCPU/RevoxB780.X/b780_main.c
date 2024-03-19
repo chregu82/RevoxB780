@@ -35,7 +35,12 @@ unsigned char SpkOn[2] = {0, 0};
 // Tuner
 unsigned char oldDeemphasis = 1;    // Input high if not pressed
 unsigned char oldHighBlend = 0;    // do nothing if already pressed
+unsigned char LowerUpper;       // Lower / upper memory
+unsigned char LastMemory;       // Last used memory slot (1..9)
+unsigned long LastFrequency;    // Last tuned station on autotune
+unsigned long StationMemory[STATION_MEM_SIZE];    // Station memory (lower / upper -> 2*9)
 unsigned char InitTuner = 1;
+
 
 int main(void)
 {
@@ -88,7 +93,32 @@ int main(void)
     SetRecord(RecordSource);
     EEPROM_write(EepromRecord, RecordSource);
     
-    DisplayTuningRecordPlay(0, 0, 0, RecordSource, 0, PlaySource);
+    // Load lower / upper from eeprom or initialize
+    LowerUpper = EEPROM_read(EepromLowerUpper);
+    if (LowerUpper > 1)
+    {
+        LowerUpper = 0;
+    }
+    EEPROM_write(EepromLowerUpper, LowerUpper);
+    
+    // Load last memory slot from eeprom or initialize
+    LastMemory = EEPROM_read(EepromLastMemory);
+    if ((LastMemory < 1) || (LastMemory > 9))
+    {
+        LastMemory = 1;
+    }
+    EEPROM_write(EepromLastMemory, LastMemory);
+    
+    // Restore last frequency
+    LastFrequency = EEPROM_read_long(EepromLastFreq);
+    
+    // Restore station memory
+    for (unsigned char i=0; i<STATION_MEM_SIZE; i++)
+    {
+        StationMemory[i] = EEPROM_read_long(EepromFreqMem+4*i);
+    }
+    
+    DisplayTuningRecordPlay(LowerUpper+1, LastMemory, 0, RecordSource, 0, PlaySource);
     
     unsigned char nbrTrue;
     unsigned char* data = (unsigned char*)&Inputs[0];
@@ -109,7 +139,7 @@ int main(void)
                 RecordSource = RecPlayKey;
                 SetRecord(RecordSource);
                 EEPROM_write(EepromRecord, RecordSource);
-                DisplayTuningRecordPlay(0, 0, 0, RecordSource, 0, PlaySource);
+                DisplayTuningRecordPlay(LowerUpper+1, LastMemory, 0, RecordSource, 0, PlaySource);
                 RecSetActive = 0;
             }
             else
@@ -121,18 +151,18 @@ int main(void)
                     RecTimeoutCnt++;
                     if (RecTimeoutCnt & 0x01)   // odd 0.5s counts
                     {
-                        DisplayTuningRecordPlay(0, 0, 0, 0, 0, PlaySource);   // blank
+                        DisplayTuningRecordPlay(LowerUpper+1, LastMemory, 0, 0, 0, PlaySource);   // blank
                     }
                     else    // even 0.5s counts
                     {
-                        if (RecordSource == RecPlayUndef) DisplayTuningRecordPlay(0, 0, 0, 6, 0, PlaySource);   // Dash char for record
-                        else DisplayTuningRecordPlay(0, 0, 0, RecordSource, 0, PlaySource);
+                        if (RecordSource == RecPlayUndef) DisplayTuningRecordPlay(LowerUpper+1, LastMemory, 0, 6, 0, PlaySource);   // Dash char for record
+                        else DisplayTuningRecordPlay(LowerUpper+1, LastMemory, 0, RecordSource, 0, PlaySource);
                     }
                     // Timeout
                     if (RecTimeoutCnt >= 40)
                     {
                         RecSetActive = 0;
-                        DisplayTuningRecordPlay(0, 0, 0, RecordSource, 0, PlaySource);
+                        DisplayTuningRecordPlay(LowerUpper+1, LastMemory, 0, RecordSource, 0, PlaySource);
                     }
                 }
             }
@@ -143,7 +173,7 @@ int main(void)
             PlaySource = RecPlayKey;
             SetPlay(PlaySource);
             EEPROM_write(EepromPlay, PlaySource);
-            DisplayTuningRecordPlay(0, 0, 0, RecordSource, 0, PlaySource);
+            DisplayTuningRecordPlay(LowerUpper+1, LastMemory, 0, RecordSource, 0, PlaySource);
         }
         // RECSET pressed?
         else if (Inputs[0].RECSET == 0)
@@ -151,7 +181,7 @@ int main(void)
             RecSetActive = 1;
             RecordBlinkTmr = TICK_128_US;   // Set start time
             RecTimeoutCnt = 0;  // init counter
-            if (RecordSource == RecPlayUndef) DisplayTuningRecordPlay(0, 0, 0, 6, 0, PlaySource);   // Dash char for record
+            if (RecordSource == RecPlayUndef) DisplayTuningRecordPlay(LowerUpper+1, LastMemory, 0, 6, 0, PlaySource);   // Dash char for record
         }
         
         // Speaker Protection
