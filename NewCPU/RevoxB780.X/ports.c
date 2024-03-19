@@ -104,41 +104,44 @@ void DisplayFreq(unsigned char On, unsigned char dig1, unsigned char dig2, unsig
     WriteToSAA(OUT_PB7_DLEN1_DISP_LEFT, dataB, 1);
 }
 
-void DisplayTuningRecordPlay(unsigned char Upper, unsigned char Mode, unsigned char Dolby, unsigned char Record, unsigned char Stereo, unsigned char Input)
+void DisplayTuningRecordPlay(DisplayTuningRecordPlayType* p)
 {
     unsigned short dataA = 0;
     unsigned short dataB = 0;
     
+    if (p->Refresh == 0) return;
+    p->Refresh = 0;
+    
     // Upper/Lower
-    if (Upper == 'F')
+    if (p->LowerUpper == 'F')
     {
         dataA |= 0b01000101;
     }
     else
     {
         dataA |= 0b01110110;
-        if ((Upper == 0) || (Upper == 1))       // off or lower bar
+        if ((p->LowerUpper == 0) || (p->LowerUpper == 1))       // off or lower bar
           bitset(dataA, 3); // clear upper bar
-        if ((Upper == 0) || (Upper == 2))       // off or upper bar
+        if ((p->LowerUpper == 0) || (p->LowerUpper == 2))       // off or upper bar
           bitset(dataA, 0); // clear lower bar
     }
     // Dolby
-    if (Dolby == 0) bitset(dataA, 7);
+    if (p->DolbyLed == 0) bitset(dataA, 7);
     // Record
-    dataA |= (RecordPlayDisp[Record] << 8);
+    dataA |= (RecordPlayDisp[p->Record] << 8);
     // Stereo
-    if (Stereo == 0) bitset(dataA, 15);
+    if (p->StereoLed == 0) bitset(dataA, 15);
     // Record
     WriteToSAA(OUT_PB6_DLEN2_DISP_RIGHT, dataA, 0);
     
     // Tuning Mode (Memory)
-    dataB |= TuningModeDisp[Mode];
+    dataB |= TuningModeDisp[p->TuningMode];
     // Dolby
-    if (Dolby == 0) bitset(dataB, 7);
+    if (p->DolbyLed == 0) bitset(dataB, 7);
     // Play
-    dataB |= (RecordPlayDisp[Input] << 8);
+    dataB |= (RecordPlayDisp[p->Play] << 8);
     // Stereo
-    if (Stereo == 0) bitset(dataB, 15);
+    if (p->StereoLed == 0) bitset(dataB, 15);
     WriteToSAA(OUT_PB6_DLEN2_DISP_RIGHT, dataB, 1);
 }
 

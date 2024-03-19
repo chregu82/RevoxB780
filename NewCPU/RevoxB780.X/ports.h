@@ -99,6 +99,17 @@ typedef struct InputsType
     unsigned char KS1;  // Key 1
     unsigned char Z;    // Antenna
 } InputsType;
+
+typedef struct DisplayTuningRecordPlayType
+{
+    unsigned char LowerUpper;
+    unsigned char TuningMode;
+    unsigned char DolbyLed;
+    unsigned char Record;
+    unsigned char StereoLed;
+    unsigned char Play;
+    unsigned char Refresh;
+} DisplayTuningRecordPlayType;
     
 typedef enum MultiplexOutEnum
 {
@@ -216,7 +227,7 @@ static const unsigned char RecordPlayDisp[7] = {
 void LoadOutputMultiplexer(MultiplexOutEnum outputNbr, unsigned char value);
 void WriteToSAA(unsigned char pin, unsigned short data, unsigned char loadbit);
 void DisplayFreq(unsigned char On, unsigned char dig1, unsigned char dig2, unsigned char dig3, unsigned char dig4, unsigned char dig5);
-void DisplayTuningRecordPlay(unsigned char Upper, unsigned char Mode, unsigned char Dolby, unsigned char Record, unsigned char Stereo, unsigned char Input);
+void DisplayTuningRecordPlay(DisplayTuningRecordPlayType* p);
 
 void ReadInputs(InputsType* Inputs);
 void ReadInputsWithCheck(InputsType* Inputs1, InputsType* Inputs2);

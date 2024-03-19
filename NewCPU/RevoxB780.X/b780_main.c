@@ -12,6 +12,7 @@
 #include "recplay.h"
 #include "protection.h"
 #include "tuner.h"
+#include <string.h>
 
 //////////////////
 // Declarations //
@@ -31,6 +32,9 @@ unsigned char RecPlayLocked = 0;        // Lock other rec/play key pressed while
 ProtStateEnum ProtectionState = PrStProtection;
 unsigned short ProtTmr;
 unsigned char SpkOn[2] = {0, 0};
+
+// Display
+DisplayTuningRecordPlayType DispTunRecPlay;
 
 // Tuner
 unsigned char oldDeemphasis = 1;    // Input high if not pressed
@@ -63,7 +67,9 @@ int main(void)
     
     // Clear Display
     DisplayFreq(0, 0, 0, 0, 0, 0);
-    DisplayTuningRecordPlay(0, 0, 0, 0, 0, 0);
+    memset(&DispTunRecPlay, 0, sizeof(DispTunRecPlay));
+    DispTunRecPlay.Refresh = 1;
+    DisplayTuningRecordPlay(&DispTunRecPlay);
     
     // Init output multiplexer
     LoadOutputMultiplexer(Mul_Out_STFI, 0);
@@ -118,7 +124,13 @@ int main(void)
         StationMemory[i] = EEPROM_read_long(EepromFreqMem+4*i);
     }
     
-    DisplayTuningRecordPlay(LowerUpper+1, LastMemory, 0, RecordSource, 0, PlaySource);
+    // Init right display
+    DispTunRecPlay.Refresh = 1;
+    DispTunRecPlay.LowerUpper = LowerUpper+1;
+    DispTunRecPlay.TuningMode = LastMemory;
+    DispTunRecPlay.Record = RecordSource;
+    DispTunRecPlay.Play = PlaySource;
+    DisplayTuningRecordPlay(&DispTunRecPlay);
     
     unsigned char nbrTrue;
     unsigned char* data = (unsigned char*)&Inputs[0];
@@ -139,7 +151,8 @@ int main(void)
                 RecordSource = RecPlayKey;
                 SetRecord(RecordSource);
                 EEPROM_write(EepromRecord, RecordSource);
-                DisplayTuningRecordPlay(LowerUpper+1, LastMemory, 0, RecordSource, 0, PlaySource);
+                DispTunRecPlay.Record = RecordSource;
+                DispTunRecPlay.Refresh = 1;
                 RecSetActive = 0;
             }
             else
@@ -151,18 +164,21 @@ int main(void)
                     RecTimeoutCnt++;
                     if (RecTimeoutCnt & 0x01)   // odd 0.5s counts
                     {
-                        DisplayTuningRecordPlay(LowerUpper+1, LastMemory, 0, 0, 0, PlaySource);   // blank
+                        DispTunRecPlay.Record = 0;  // blank
+                        DispTunRecPlay.Refresh = 1;
                     }
                     else    // even 0.5s counts
                     {
-                        if (RecordSource == RecPlayUndef) DisplayTuningRecordPlay(LowerUpper+1, LastMemory, 0, 6, 0, PlaySource);   // Dash char for record
-                        else DisplayTuningRecordPlay(LowerUpper+1, LastMemory, 0, RecordSource, 0, PlaySource);
+                        if (RecordSource == RecPlayUndef) DispTunRecPlay.Record = 6;   // Dash char for record
+                        else DispTunRecPlay.Record = RecordSource;
+                        DispTunRecPlay.Refresh = 1;
                     }
                     // Timeout
                     if (RecTimeoutCnt >= 40)
                     {
                         RecSetActive = 0;
-                        DisplayTuningRecordPlay(LowerUpper+1, LastMemory, 0, RecordSource, 0, PlaySource);
+                        DispTunRecPlay.Record = RecordSource;
+                        DispTunRecPlay.Refresh = 1;
                     }
                 }
             }
@@ -173,7 +189,8 @@ int main(void)
             PlaySource = RecPlayKey;
             SetPlay(PlaySource);
             EEPROM_write(EepromPlay, PlaySource);
-            DisplayTuningRecordPlay(LowerUpper+1, LastMemory, 0, RecordSource, 0, PlaySource);
+            DispTunRecPlay.Play = PlaySource;
+            DispTunRecPlay.Refresh = 1;
         }
         // RECSET pressed?
         else if (Inputs[0].RECSET == 0)
@@ -181,7 +198,11 @@ int main(void)
             RecSetActive = 1;
             RecordBlinkTmr = TICK_128_US;   // Set start time
             RecTimeoutCnt = 0;  // init counter
-            if (RecordSource == RecPlayUndef) DisplayTuningRecordPlay(LowerUpper+1, LastMemory, 0, 6, 0, PlaySource);   // Dash char for record
+            if (RecordSource == RecPlayUndef)
+            {
+                DispTunRecPlay.Record = 6;  // Dash char for record
+                DispTunRecPlay.Refresh = 1;
+            }
         }
         
         // Speaker Protection
@@ -203,6 +224,8 @@ int main(void)
             if (data[k] != 0) nbrTrue++;
         }
         
-        DisplayFreq(1, 0,nbrTrue/10,nbrTrue%10,PlaySource/16,PlaySource%16);
+        // Update Display
+        DisplayTuningRecordPlay(&DispTunRecPlay);
+        DisplayFreq(1,0,nbrTrue/10,nbrTrue%10,PlaySource/16,PlaySource%16);
     }
 }
