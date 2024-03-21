@@ -173,3 +173,27 @@ void ReadInputsWithCheck(InputsType* Inputs1, InputsType* Inputs2)
         ReadInputs(Inputs2);
     } while (memcmp(Inputs1, Inputs2, sizeof(InputsType)) != 0);
 }
+
+unsigned char DetectKS_Keys(InputsType* pIn, unsigned char* pOld, unsigned char* pEdge)
+{
+    unsigned char ret = 0;
+    unsigned char key[NBR_OF_PROG_KEYS];
+    key[0] = pIn->KS0;
+    key[1] = pIn->KS1;
+    key[2] = pIn->KS2;
+    key[3] = pIn->KS3;
+    key[4] = pIn->KS4;
+    key[5] = pIn->KS5;
+    key[6] = pIn->KS6;
+    key[7] = pIn->KS7;
+    key[8] = pIn->KS8;
+    key[9] = pIn->KS9;
+    
+    for (unsigned char i=0; i<NBR_OF_PROG_KEYS; i++)
+    {
+        pEdge[i] = ((key[i] == 0) && (pOld[i] == 1));
+        if (pEdge[i]) ret = i;
+        pOld[i] = key[i];
+    }
+    return ret;
+}

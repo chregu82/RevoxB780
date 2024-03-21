@@ -55,6 +55,9 @@ extern "C" {
 #define IN_PE5_Z PE5
 #define IN_PE6_Mul6 PE6
     
+// Keys
+#define NBR_OF_PROG_KEYS 10
+    
 typedef struct InputsType
 {
     unsigned char H;    // Overtemperature      -> done
@@ -231,6 +234,8 @@ void DisplayTuningRecordPlay(DisplayTuningRecordPlayType* p);
 
 void ReadInputs(InputsType* Inputs);
 void ReadInputsWithCheck(InputsType* Inputs1, InputsType* Inputs2);
+
+unsigned char DetectKS_Keys(InputsType* pIn, unsigned char* pOld, unsigned char* pEdge);
 
 #ifdef	__cplusplus
 }

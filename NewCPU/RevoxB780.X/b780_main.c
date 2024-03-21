@@ -39,11 +39,18 @@ DisplayTuningRecordPlayType DispTunRecPlay;
 // Tuner
 unsigned char oldDeemphasis = 1;    // Input high if not pressed
 unsigned char oldHighBlend = 0;    // do nothing if already pressed
+unsigned char oldTuningModeKey = 1; // for edge detection
+unsigned char TuningModePressed;    // Negative Edge
 unsigned char LowerUpper;       // Lower / upper memory
 unsigned char LastMemory;       // Last used memory slot (1..9)
 unsigned long LastFrequency;    // Last tuned station on autotune
+unsigned long ActPlayingFreq;   // Actual Frequency
+TuningModeEnum TuningMode = TuningModeAutoMem;  // Always start with last memory
 unsigned long StationMemory[STATION_MEM_SIZE];    // Station memory (lower / upper -> 2*9)
-unsigned char InitTuner = 1;
+unsigned char oldProgKey[NBR_OF_PROG_KEYS] = {1,1,1,1,1,1,1,1,1,1};     // Flags for edge detection
+unsigned char KS_pressed[NBR_OF_PROG_KEYS];  // Key presses KS0..KS9
+unsigned char PressedKS_Key;
+unsigned char InitTuner = 1;        // Initialize tuner after boot
 
 
 int main(void)
@@ -123,6 +130,10 @@ int main(void)
     {
         StationMemory[i] = EEPROM_read_long(EepromFreqMem+4*i);
     }
+    
+    // Set last played frequency
+    ActPlayingFreq = StationMemory[LastMemory-1*9*LowerUpper];
+    //ActPlayingFreq = 97300;
     
     // Init right display
     DispTunRecPlay.Refresh = 1;
@@ -208,15 +219,45 @@ int main(void)
         // Speaker Protection
         HandleProtection(&Inputs[0], &ProtectionState, &ProtTmr, SpkOn);
         
-        // Tuner
+        ///////////
+        // Tuner //
+        ///////////
         SetDeemphasis(Inputs[0].D75us, &oldDeemphasis);
         SetStereoFilter(Inputs[0].HIBL, &oldHighBlend);
         
+        // Check change tuning mode key
+        TuningModePressed = ((Inputs[0].CHTM == 0) && (oldTuningModeKey == 1));
+        oldTuningModeKey = Inputs[0].CHTM;
+        
+        // Check KS keys
+        PressedKS_Key = DetectKS_Keys(&Inputs[0], oldProgKey, KS_pressed);
+        
         if (InitTuner)
-          {
+        {
             InitTuner = 0;
-            TuneToFreq(97300);
-          }
+            TuneToFreq(ActPlayingFreq);
+            RefreshTuningDisplay(ActPlayingFreq);
+        }
+        
+        switch (TuningMode)
+        {
+            case TuningModeAutoMem:
+                if (KS_pressed[0])
+                {
+                    LowerUpper ^= 1;    // Invertieren von bit 0;
+                    DispTunRecPlay.LowerUpper = LowerUpper+1;
+                    DispTunRecPlay.Refresh = 1;
+                }
+                if (PressedKS_Key > 0)  // KS1..9
+                {
+                    DispTunRecPlay.TuningMode = PressedKS_Key;
+                    DispTunRecPlay.Refresh = 1;
+                }
+                break;
+            
+            case TuningModeManual:
+                break;
+        }
         
         nbrTrue = 0;
         for (unsigned char k=0; k<sizeof(Inputs[0]);k++)
@@ -226,6 +267,6 @@ int main(void)
         
         // Update Display
         DisplayTuningRecordPlay(&DispTunRecPlay);
-        DisplayFreq(1,0,nbrTrue/10,nbrTrue%10,PlaySource/16,PlaySource%16);
+        //DisplayFreq(1,0,nbrTrue/10,nbrTrue%10,PlaySource/16,PlaySource%16);
     }
 }

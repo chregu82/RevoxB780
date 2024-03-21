@@ -30,6 +30,7 @@ typedef enum TuningModeEnum
 void SetDeemphasis(unsigned char key, unsigned char* oldValue);
 void SetStereoFilter(unsigned char key, unsigned char* oldValue);
 void TuneToFreq(unsigned long Freq);
+void RefreshTuningDisplay(unsigned long Freq);
 
 
 #ifdef	__cplusplus
