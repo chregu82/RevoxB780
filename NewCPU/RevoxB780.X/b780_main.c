@@ -49,7 +49,12 @@ TuningModeEnum TuningMode = TuningModeAutoMem;  // Always start with last memory
 unsigned long StationMemory[STATION_MEM_SIZE];    // Station memory (lower / upper -> 2*9)
 unsigned char oldProgKey[NBR_OF_PROG_KEYS] = {1,1,1,1,1,1,1,1,1,1};     // Flags for edge detection
 unsigned char KS_pressed[NBR_OF_PROG_KEYS];  // Key presses KS0..KS9
-unsigned char PressedKS_Key;
+unsigned char PressedKS_Key;    // Key number that has been pressed KS0..KS9
+unsigned char oldUpKey = 1, oldDownKey = 1;     // Edge detection up/down
+unsigned char UpPressed, DownPressed;       // Key up or down pressed (neg edge)
+AutoTuneEnum AutoTune = AutoTuneHold;       // AutoTune State
+unsigned short TuningTimer = 0;         // Timer for AutoTuning interval
+TON_Type TuningFastDelay;           // Delay fast Autotuning
 unsigned char InitTuner = 1;        // Initialize tuner after boot
 
 
@@ -133,7 +138,8 @@ int main(void)
     
     // Set last played frequency
     ActPlayingFreq = StationMemory[LastMemory-1*9*LowerUpper];
-    //ActPlayingFreq = 97300;
+    // Init fast tuning delay
+    TuningFastDelay.Delay = TICKS_250ms;
     
     // Init right display
     DispTunRecPlay.Refresh = 1;
@@ -232,6 +238,12 @@ int main(void)
         // Check KS keys
         PressedKS_Key = DetectKS_Keys(&Inputs[0], oldProgKey, KS_pressed);
         
+        // Check up / down key
+        UpPressed = ((Inputs[0].UP == 0) && (oldUpKey == 1));
+        oldUpKey = Inputs[0].UP;
+        DownPressed = ((Inputs[0].DOWN == 0) && (oldDownKey == 1));
+        oldDownKey = Inputs[0].DOWN;
+        
         if (InitTuner)
         {
             InitTuner = 0;
@@ -253,6 +265,97 @@ int main(void)
                     DispTunRecPlay.TuningMode = PressedKS_Key;
                     DispTunRecPlay.Refresh = 1;
                 }
+                
+                // AutoTune
+                switch (AutoTune)
+                {
+                  case AutoTuneHold:
+                    if (UpPressed)
+                    {
+                        AutoTune = AutoTuneUp;
+                        if ((ActPlayingFreq < LOWEST_FREQ) || (ActPlayingFreq > HIGHEST_FREQ)) ActPlayingFreq = LOWEST_FREQ - AUTOTUNING_STEP;
+                    }
+                    else if (DownPressed)
+                    {
+                        AutoTune = AutoTuneDown;
+                        if ((ActPlayingFreq < LOWEST_FREQ) || (ActPlayingFreq > HIGHEST_FREQ)) ActPlayingFreq = HIGHEST_FREQ + AUTOTUNING_STEP;
+                    }
+                    // leaving this state
+                    if (AutoTune != AutoTuneHold)
+                    {
+                        TuningTimer = TICK_128_US - TICKS_250ms;    // Starts tuning immediately
+                        DispTunRecPlay.TuningMode = TUNING_DISP_A;
+                        DispTunRecPlay.Refresh = 1;
+                    }
+                    break;
+                    
+                  case AutoTuneUp:
+                    TuningFastDelay.In = ((Inputs[0].UP == 0) && (Inputs[0].DOWN == 1));  // Up pressed
+                    TON(&TuningFastDelay);
+                    if ((TICK_128_US - TuningTimer) >= TICKS_250ms)
+                      {
+                        TuningTimer = TICK_128_US;
+                        ActPlayingFreq += AUTOTUNING_STEP;
+                        if (ActPlayingFreq >= HIGHEST_FREQ) ActPlayingFreq = LOWEST_FREQ;
+                        RefreshTuningDisplay(ActPlayingFreq);
+                        TuneToFreq(ActPlayingFreq);
+                      }
+                    else if ((Inputs[0].UP == 1) && (Inputs[0].DOWN == 0))  // down pressed
+                      {
+                        TuningTimer = TICK_128_US;
+                        AutoTune = AutoTuneDown;
+                      }
+                    else if ((Inputs[0].LOC) && (Inputs[0].THSTA) && (Inputs[0].UP == 1))
+                    {
+                        AutoTune = AutoTuneHold;
+                    }
+                    else if (TuningFastDelay.Q)     // Delayed fast tuning
+                      {
+                        // go fast
+                        if ((TICK_128_US - TuningTimer) >= TICKS_100ms)
+                          {
+                            TuningTimer = TICK_128_US;
+                            ActPlayingFreq += AUTOTUNING_STEP;
+                            if (ActPlayingFreq >= HIGHEST_FREQ) ActPlayingFreq = LOWEST_FREQ;
+                            RefreshTuningDisplay(ActPlayingFreq);
+                          }
+                      }
+                    break;
+                    
+                  case AutoTuneDown:
+                    TuningFastDelay.In = ((Inputs[0].UP == 1) && (Inputs[0].DOWN == 0));  // Down pressed
+                    TON(&TuningFastDelay);
+                    if ((TICK_128_US - TuningTimer) >= TICKS_250ms)
+                      {
+                        TuningTimer = TICK_128_US;
+                        ActPlayingFreq -= AUTOTUNING_STEP;
+                        if (ActPlayingFreq <= LOWEST_FREQ) ActPlayingFreq = HIGHEST_FREQ;
+                        RefreshTuningDisplay(ActPlayingFreq);
+                        TuneToFreq(ActPlayingFreq);
+                      }
+                    else if ((Inputs[0].UP == 0) && (Inputs[0].DOWN == 1))  // Up pressed
+                      {
+                        TuningTimer = TICK_128_US;
+                        AutoTune = AutoTuneUp;
+                      }
+                    else if ((Inputs[0].LOC) && (Inputs[0].THSTA) && (Inputs[0].DOWN == 1))
+                    {
+                        AutoTune = AutoTuneHold;
+                    }
+                    else if (TuningFastDelay.Q)     // Delayed fast tuning
+                      {
+                        // go fast
+                        if ((TICK_128_US - TuningTimer) >= TICKS_100ms)
+                          {
+                            TuningTimer = TICK_128_US;
+                            ActPlayingFreq -= AUTOTUNING_STEP;
+                            if (ActPlayingFreq <= LOWEST_FREQ) ActPlayingFreq = HIGHEST_FREQ;
+                            RefreshTuningDisplay(ActPlayingFreq);
+                          }
+                      }
+                    break;
+                }
+                  
                 break;
             
             case TuningModeManual:

@@ -99,8 +99,9 @@ void DisplayFreq(unsigned char On, unsigned char dig1, unsigned char dig2, unsig
 
     dataB |= (FreqLow[dig5] << 8);
     dataB |= FreqHigh[dig3];
-    if (dig3) bitclr(dataB, 12);   // Dot
-    else bitset(dataB, 12);
+    bitclr(dataB, 12);   // Dot
+    //if (dig3) bitclr(dataB, 12);   // Dot
+    //else bitset(dataB, 12);
     WriteToSAA(OUT_PB7_DLEN1_DISP_LEFT, dataB, 1);
 }
 
