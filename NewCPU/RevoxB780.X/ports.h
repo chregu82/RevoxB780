@@ -76,12 +76,12 @@ typedef struct InputsType
     unsigned char LSNE; // New entry (Star key)
     unsigned char KS6;  // Key 6
     unsigned char TA2;  // Tape 2 (5)
-    unsigned char FL;   //Frequency Low
+    unsigned char FL;   // Frequency too low (if signal = 0)
     unsigned char MOFF; // Muting off
     unsigned char DOWN; // Down key
     unsigned char KS5;  // Key 5
     unsigned char TA1;  // Tape 1 (4)
-    unsigned char FH;   // Frequency High
+    unsigned char FH;   // Frequency too high (if signal = 1)
     unsigned char THSTA;    // Threshold Station
     unsigned char UP;   // Up key
     unsigned char KS4;  // Key 4

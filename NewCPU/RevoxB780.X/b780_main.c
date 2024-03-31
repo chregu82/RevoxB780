@@ -50,11 +50,9 @@ unsigned long StationMemory[STATION_MEM_SIZE];    // Station memory (lower / upp
 unsigned char oldProgKey[NBR_OF_PROG_KEYS] = {1,1,1,1,1,1,1,1,1,1};     // Flags for edge detection
 unsigned char KS_pressed[NBR_OF_PROG_KEYS];  // Key presses KS0..KS9
 unsigned char PressedKS_Key;    // Key number that has been pressed KS0..KS9
-unsigned char oldUpKey = 1, oldDownKey = 1;     // Edge detection up/down
-unsigned char UpPressed, DownPressed;       // Key up or down pressed (neg edge)
 AutoTuneEnum AutoTune = AutoTuneHold;       // AutoTune State
 unsigned short TuningTimer = 0;         // Timer for AutoTuning interval
-TON_Type TuningFastDelay;           // Delay fast Autotuning
+short TuningStep;                   // Step for autotuning
 unsigned char InitTuner = 1;        // Initialize tuner after boot
 
 
@@ -138,8 +136,6 @@ int main(void)
     
     // Set last played frequency
     ActPlayingFreq = StationMemory[LastMemory-1*9*LowerUpper];
-    // Init fast tuning delay
-    TuningFastDelay.Delay = TICKS_250ms;
     
     // Init right display
     DispTunRecPlay.Refresh = 1;
@@ -238,12 +234,6 @@ int main(void)
         // Check KS keys
         PressedKS_Key = DetectKS_Keys(&Inputs[0], oldProgKey, KS_pressed);
         
-        // Check up / down key
-        UpPressed = ((Inputs[0].UP == 0) && (oldUpKey == 1));
-        oldUpKey = Inputs[0].UP;
-        DownPressed = ((Inputs[0].DOWN == 0) && (oldDownKey == 1));
-        oldDownKey = Inputs[0].DOWN;
-        
         if (InitTuner)
         {
             InitTuner = 0;
@@ -256,7 +246,7 @@ int main(void)
             case TuningModeAutoMem:
                 if (KS_pressed[0])
                 {
-                    LowerUpper ^= 1;    // Invertieren von bit 0;
+                    LowerUpper ^= 1;    // Invert bit 0;
                     DispTunRecPlay.LowerUpper = LowerUpper+1;
                     DispTunRecPlay.Refresh = 1;
                 }
@@ -266,94 +256,90 @@ int main(void)
                     DispTunRecPlay.Refresh = 1;
                 }
                 
-                // AutoTune
+                /* AutoTune
+                 * AutoTuning starts with key release
+                 * If key is pressed for at least 0.5s, fast tuning is activated. as long as a fast tuning is active, stations are skipped.
+                 * Fast tuning is 1MHz per second in 0.025 MHz steps, probably theres not even tuning, but display change only
+                 * Slow tuning is 0.5Mhz per second in 0.1 MHz steps
+                 * After a frequency is tuned, we are waiting for LOC = 1 and THSTA (Station signal) and if Stereo Only THSTE also
+                 * If this is all fine, we check FL and FH
+                 * FH should be 0, FL should be 1, else we finetune in 0.05 MHz steps and check again
+                 */
                 switch (AutoTune)
                 {
                   case AutoTuneHold:
-                    if (UpPressed)
+                    if (Inputs[0].UP == 0)  // Up pressed
                     {
-                        AutoTune = AutoTuneUp;
-                        if ((ActPlayingFreq < LOWEST_FREQ) || (ActPlayingFreq > HIGHEST_FREQ)) ActPlayingFreq = LOWEST_FREQ - AUTOTUNING_STEP;
+                        AutoTune = AutoTuneTune;
+                        if ((ActPlayingFreq < LOWEST_FREQ) || (ActPlayingFreq > HIGHEST_FREQ)) ActPlayingFreq = LOWEST_FREQ;
                     }
-                    else if (DownPressed)
+                    else if (Inputs[0].DOWN == 0)   // Down pressed
                     {
-                        AutoTune = AutoTuneDown;
-                        if ((ActPlayingFreq < LOWEST_FREQ) || (ActPlayingFreq > HIGHEST_FREQ)) ActPlayingFreq = HIGHEST_FREQ + AUTOTUNING_STEP;
+                        AutoTune = AutoTuneTune;
+                        if ((ActPlayingFreq < LOWEST_FREQ) || (ActPlayingFreq > HIGHEST_FREQ)) ActPlayingFreq = HIGHEST_FREQ;
                     }
                     // leaving this state
                     if (AutoTune != AutoTuneHold)
                     {
-                        TuningTimer = TICK_128_US - TICKS_250ms;    // Starts tuning immediately
                         DispTunRecPlay.TuningMode = TUNING_DISP_A;
                         DispTunRecPlay.Refresh = 1;
+                        TuningTimer = TICK_128_US;
                     }
                     break;
                     
-                  case AutoTuneUp:
-                    TuningFastDelay.In = ((Inputs[0].UP == 0) && (Inputs[0].DOWN == 1));  // Up pressed
-                    TON(&TuningFastDelay);
-                    if ((TICK_128_US - TuningTimer) >= TICKS_250ms)
+                  case AutoTuneTune:
+                    if ((Inputs[0].UP == 0) || (Inputs[0].DOWN == 0))  // up or down pressed
+                      {
+                        // wait for key release
+                        if (Inputs[0].UP == 0) TuningStep = AUTOTUNING_STEP;
+                        else if (Inputs[0].DOWN == 0) TuningStep = -AUTOTUNING_STEP;
+                        // Tuning fast
+                        if ((TICK_128_US - TuningTimer) >= TICKS_500ms) AutoTune = AutoTuneFast;
+                      }
+                    // Auto tuning in 100 KHz steps every 200ms
+                    else if ((TICK_128_US - TuningTimer) >= TICKS_200ms)
                       {
                         TuningTimer = TICK_128_US;
-                        ActPlayingFreq += AUTOTUNING_STEP;
-                        if (ActPlayingFreq >= HIGHEST_FREQ) ActPlayingFreq = LOWEST_FREQ;
+                        ActPlayingFreq += TuningStep;
+                        if (ActPlayingFreq > HIGHEST_FREQ) ActPlayingFreq = LOWEST_FREQ;
+                        else if (ActPlayingFreq < LOWEST_FREQ) ActPlayingFreq = HIGHEST_FREQ;
                         RefreshTuningDisplay(ActPlayingFreq);
                         TuneToFreq(ActPlayingFreq);
-                      }
-                    else if ((Inputs[0].UP == 1) && (Inputs[0].DOWN == 0))  // down pressed
-                      {
-                        TuningTimer = TICK_128_US;
-                        AutoTune = AutoTuneDown;
-                      }
-                    else if ((Inputs[0].LOC) && (Inputs[0].THSTA) && (Inputs[0].UP == 1))
-                    {
-                        AutoTune = AutoTuneHold;
-                    }
-                    else if (TuningFastDelay.Q)     // Delayed fast tuning
-                      {
-                        // go fast
-                        if ((TICK_128_US - TuningTimer) >= TICKS_100ms)
-                          {
-                            TuningTimer = TICK_128_US;
-                            ActPlayingFreq += AUTOTUNING_STEP;
-                            if (ActPlayingFreq >= HIGHEST_FREQ) ActPlayingFreq = LOWEST_FREQ;
-                            RefreshTuningDisplay(ActPlayingFreq);
-                          }
+                        AutoTune = AutoTuneCheckForStation;
                       }
                     break;
                     
-                  case AutoTuneDown:
-                    TuningFastDelay.In = ((Inputs[0].UP == 1) && (Inputs[0].DOWN == 0));  // Down pressed
-                    TON(&TuningFastDelay);
-                    if ((TICK_128_US - TuningTimer) >= TICKS_250ms)
+                  case AutoTuneCheckForStation:
+                    if ((Inputs[0].LOC) && (Inputs[0].THSTA) && ((TICK_128_US - TuningTimer) >= TICKS_10ms))
                       {
-                        TuningTimer = TICK_128_US;
-                        ActPlayingFreq -= AUTOTUNING_STEP;
-                        if (ActPlayingFreq <= LOWEST_FREQ) ActPlayingFreq = HIGHEST_FREQ;
-                        RefreshTuningDisplay(ActPlayingFreq);
-                        TuneToFreq(ActPlayingFreq);
+                        if ((TuningStep > 0) && (Inputs[0].FH)) AutoTune = AutoTuneTune;  // Skip if frequency too high
+                        else if ((TuningStep < 0) && (Inputs[0].FL == 0)) AutoTune = AutoTuneTune;  // Skip if frequency too low
+                        else AutoTune = AutoTuneHold;
                       }
-                    else if ((Inputs[0].UP == 0) && (Inputs[0].DOWN == 1))  // Up pressed
+                    else if ((TICK_128_US - TuningTimer) >= TICKS_100ms)
                       {
-                        TuningTimer = TICK_128_US;
-                        AutoTune = AutoTuneUp;
-                      }
-                    else if ((Inputs[0].LOC) && (Inputs[0].THSTA) && (Inputs[0].DOWN == 1))
-                    {
-                        AutoTune = AutoTuneHold;
-                    }
-                    else if (TuningFastDelay.Q)     // Delayed fast tuning
-                      {
-                        // go fast
-                        if ((TICK_128_US - TuningTimer) >= TICKS_100ms)
-                          {
-                            TuningTimer = TICK_128_US;
-                            ActPlayingFreq -= AUTOTUNING_STEP;
-                            if (ActPlayingFreq <= LOWEST_FREQ) ActPlayingFreq = HIGHEST_FREQ;
-                            RefreshTuningDisplay(ActPlayingFreq);
-                          }
+                        // Look for next station
+                        AutoTune = AutoTuneTune;
                       }
                     break;
+                    
+                  case AutoTuneFast:
+                    // Increase / Decrease Display every 25ms by 25 KHz
+                    if ((TICK_128_US - TuningTimer) >= TICKS_25ms)
+                      {
+                        TuningTimer = TICK_128_US;
+                        ActPlayingFreq += (TuningStep / 4); // 25 KHz instead of 100
+                        if (ActPlayingFreq > HIGHEST_FREQ) ActPlayingFreq = LOWEST_FREQ;
+                        else if (ActPlayingFreq < LOWEST_FREQ) ActPlayingFreq = HIGHEST_FREQ;
+                        RefreshTuningDisplay(ActPlayingFreq);
+                      }
+                    // if pressed key is released, wait for 50 KHz step and continue auto tuning
+                    else if ((((Inputs[0].UP == 1) && (TuningStep > 0)) || ((Inputs[0].DOWN == 1) && (TuningStep < 0))) && ((ActPlayingFreq % 50) == 0))
+                      {
+                        AutoTune = AutoTuneTune;
+                      }
+                    break;
+                    
                 }
                   
                 break;

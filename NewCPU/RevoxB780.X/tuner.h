@@ -19,7 +19,7 @@ extern "C"
 #define FREQ_OFFSET 11000   // Frequency offset 11MHz
     
 #define LOWEST_FREQ      87500       // 87.5 MHz
-#define HIGHEST_FREQ    108000       // 107.95 MHz
+#define HIGHEST_FREQ    107950       // 107.95 MHz
 #define AUTOTUNING_STEP    100     // 100 KHz
     
 #define TUNING_DISP_A   10
@@ -34,15 +34,15 @@ typedef enum TuningModeEnum
 typedef enum AutoTuneEnum
 {
     AutoTuneHold,
-    AutoTuneUp,
-    AutoTuneDown
+    AutoTuneTune,
+    AutoTuneCheckForStation,
+    AutoTuneFast,
 } AutoTuneEnum;
 
 void SetDeemphasis(unsigned char key, unsigned char* oldValue);
 void SetStereoFilter(unsigned char key, unsigned char* oldValue);
 void TuneToFreq(unsigned long Freq);
 void RefreshTuningDisplay(unsigned long Freq);
-
 
 #ifdef	__cplusplus
 }

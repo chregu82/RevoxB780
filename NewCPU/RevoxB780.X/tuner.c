@@ -1,5 +1,6 @@
 #include "tuner.h"
 #include "ports.h"
+#include "timer.h"
 
 // Set deemphasis according to push button
 // 50us if not pressed, else 75us
