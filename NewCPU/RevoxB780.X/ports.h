@@ -228,7 +228,7 @@ static const unsigned char RecordPlayDisp[7] = {
 };
 
 void LoadOutputMultiplexer(MultiplexOutEnum outputNbr, unsigned char value);
-void WriteToSAA(unsigned char pin, unsigned short data, unsigned char loadbit);
+void WriteToSAA(unsigned char pin, unsigned int data, unsigned char loadbit);
 void DisplayFreq(unsigned char On, unsigned char dig1, unsigned char dig2, unsigned char dig3, unsigned char dig4, unsigned char dig5);
 void DisplayTuningRecordPlay(DisplayTuningRecordPlayType* p);
 

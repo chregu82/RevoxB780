@@ -1,6 +1,7 @@
 #include "recplay.h"
 #include "ports.h"
 #include "bitop.h"
+#include "nvm.h"
 
 // Pressed key to Input / Record Number
 // Lock new key presses while not all keys released
@@ -50,6 +51,7 @@ void SetPlay(RecPlayEnum Play)   // NF5..NF8
         default:    // PHONO
             break;
     }
+    nvm_set_play(Play);
 }
 
 void SetRecord(RecPlayEnum Record)   // NF1..NF4
@@ -81,4 +83,5 @@ void SetRecord(RecPlayEnum Record)   // NF1..NF4
         default:    // Tuner
             break;
     }
+    nvm_set_record(Record);
 }

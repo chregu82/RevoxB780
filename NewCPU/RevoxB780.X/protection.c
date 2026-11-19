@@ -2,7 +2,7 @@
 #include "protection.h"
 #include "bitop.h"
 
-void HandleProtection(InputsType* pInput, ProtStateEnum* pProtState, unsigned short* pTmr, unsigned char* pSpkOn)
+void HandleProtection(InputsType* pInput, ProtStateEnum* pProtState, unsigned int* pTmr, unsigned char* pSpkOn)
 {
     unsigned char SpeakerKey[2];
     

@@ -5,13 +5,14 @@
  * Created on 4. Januar 2024, 21:59
  */
 
+#include "timer.h"
 #include "fuses.h"
 #include "bitop.h"
 #include "ports.h"
-#include "remmem.h"
 #include "recplay.h"
 #include "protection.h"
 #include "tuner.h"
+#include "nvm.h"
 #include <string.h>
 
 //////////////////
@@ -23,14 +24,14 @@ InputsType Inputs[2];   // Digital inputs (keys, etc.) Array of 2 for data debou
 RecPlayEnum PlaySource; // Source to play
 RecPlayEnum RecordSource; // Source for recording
 unsigned char RecSetActive;     // Waiting for record input set
-unsigned short RecordBlinkTmr;   // Timer for blinking the record display
+unsigned int RecordBlinkTmr;   // Timer for blinking the record display
 unsigned char RecTimeoutCnt;     // Counter for record set timeout 20s (40*0.5s)
 RecPlayEnum RecPlayKey; // Pressed key for Play or Record
 unsigned char RecPlayLocked = 0;        // Lock other rec/play key pressed while another key is pressed
 
 // Protection
 ProtStateEnum ProtectionState = PrStProtection;
-unsigned short ProtTmr;
+unsigned int ProtTmr;
 unsigned char SpkOn[2] = {0, 0};
 
 // Display
@@ -43,25 +44,28 @@ unsigned char oldTuningModeKey = 1; // for edge detection
 unsigned char TuningModePressed;    // Negative Edge
 unsigned char LowerUpper;       // Lower / upper memory
 unsigned char LastMemory;       // Last used memory slot (1..9)
-unsigned long LastFrequency;    // Last tuned station on autotune
-unsigned long ActPlayingFreq;   // Actual Frequency
+unsigned int LastFrequency;    // Last tuned station on autotune
+unsigned int ActPlayingFreq;   // Actual Frequency
 TuningModeEnum TuningMode = TuningModeAutoMem;  // Always start with last memory
-unsigned long StationMemory[STATION_MEM_SIZE];    // Station memory (lower / upper -> 2*9)
+unsigned int StationMemory[NUMBER_OF_STATIONS];    // Station memory (lower / upper -> 2*9)
 unsigned char oldProgKey[NBR_OF_PROG_KEYS] = {1,1,1,1,1,1,1,1,1,1};     // Flags for edge detection
 unsigned char KS_pressed[NBR_OF_PROG_KEYS];  // Key presses KS0..KS9
 unsigned char PressedKS_Key;    // Key number that has been pressed KS0..KS9
 AutoTuneEnum AutoTune = AutoTuneHold;       // AutoTune State
-unsigned short TuningTimer = 0;         // Timer for AutoTuning interval
+unsigned int TuningTimer = 0;         // Timer for AutoTuning interval
 short TuningStep;                   // Step for autotuning
 unsigned char InitTuner = 1;        // Initialize tuner after boot
+unsigned char DummyAntennaVal;  // Vorerst
+
+// EEPROM
+unsigned int EepromTimer;
 
 
 int main(void)
 {
-    // Set up a timer with 1/1024 system clock
-    TCCR1A = 0;
-    TCCR1B = (1<<CS10) | (1<<CS12);
-    
+    // Init Timer (128us Tick)
+    InitTimer();
+  
     // Ports configuration (IN/OUT)
     DDRA = (1<<OUT_PA0_A) | (1<<OUT_PA1_B) | (1<<OUT_PA2_C) | (1<<OUT_PA4_NF5) | (1<<OUT_PA5_NF6) | (1<<OUT_PA6_NF7) | (1<<OUT_PA7_NF8);
     DDRB = 0xFF - (1<<OUT_PB1_DON);     // DON is either 0 or floating, has pull-up and therefore is high if configured as output
@@ -91,51 +95,39 @@ int main(void)
     LoadOutputMultiplexer(Mul_Out_SPA, 0);
     LoadOutputMultiplexer(Mul_Out_MUT, 1);
     
-    // Load play source from eeprom or initialize
-    PlaySource = EEPROM_read(EepromPlay);
-    if ((PlaySource == RecPlayUndef) || (PlaySource > RecPlayTape2))
-    {
-        PlaySource = RecPlayAux;
-    }
+    // Initialisiere Eeprom Timer
+    EepromTimer = TICK_128_US;
+    
+    // Lade letzten Zustand aus dem Eeprom
+    nvm_load_state();
+    
+    // Lade Play
+    PlaySource = nvm_get_play();    // Initialisiert wenn ungueltig
     SetPlay(PlaySource);
-    EEPROM_write(EepromPlay, PlaySource);
     
-    // Load record source from eeprom or initialize
-    RecordSource = EEPROM_read(EepromRecord);
-    if (RecordSource > RecPlayTape2)
-    {
-        RecordSource = RecPlayUndef;
-    }
+    // Lade record
+    RecordSource = nvm_get_record();    // Initialisiert wenn ungueltig
     SetRecord(RecordSource);
-    EEPROM_write(EepromRecord, RecordSource);
     
-    // Load lower / upper from eeprom or initialize
-    LowerUpper = EEPROM_read(EepromLowerUpper);
-    if (LowerUpper > 1)
-    {
-        LowerUpper = 0;
-    }
-    EEPROM_write(EepromLowerUpper, LowerUpper);
+    // Lade Balken
+    LowerUpper = nvm_get_bank();   // Initialisiert wenn ungueltig
+    nvm_set_bank(LowerUpper);
     
-    // Load last memory slot from eeprom or initialize
-    LastMemory = EEPROM_read(EepromLastMemory);
-    if ((LastMemory < 1) || (LastMemory > 9))
-    {
-        LastMemory = 1;
-    }
-    EEPROM_write(EepromLastMemory, LastMemory);
+    // Zuletzt gewaehlte Station
+    LastMemory = nvm_get_selected_station();   // Initialisiert wenn ungueltig
+    nvm_set_selected_station(LastMemory);
     
     // Restore last frequency
-    LastFrequency = EEPROM_read_long(EepromLastFreq);
+    LastFrequency = nvm_get_frequency();
     
     // Restore station memory
-    for (unsigned char i=0; i<STATION_MEM_SIZE; i++)
+    for (unsigned char i=0; i<NUMBER_OF_STATIONS; i++)
     {
-        StationMemory[i] = EEPROM_read_long(EepromFreqMem+4*i);
+        nvm_load_station(i, &StationMemory[i], &DummyAntennaVal);
     }
     
     // Set last played frequency
-    ActPlayingFreq = StationMemory[LastMemory-1*9*LowerUpper];
+    ActPlayingFreq = StationMemory[LastMemory-1];
     
     // Init right display
     DispTunRecPlay.Refresh = 1;
@@ -163,7 +155,6 @@ int main(void)
                 // Waiting for key press (Record set) or Record off key
                 RecordSource = RecPlayKey;
                 SetRecord(RecordSource);
-                EEPROM_write(EepromRecord, RecordSource);
                 DispTunRecPlay.Record = RecordSource;
                 DispTunRecPlay.Refresh = 1;
                 RecSetActive = 0;
@@ -201,7 +192,6 @@ int main(void)
         {
             PlaySource = RecPlayKey;
             SetPlay(PlaySource);
-            EEPROM_write(EepromPlay, PlaySource);
             DispTunRecPlay.Play = PlaySource;
             DispTunRecPlay.Refresh = 1;
         }
@@ -403,5 +393,12 @@ int main(void)
         // Update Display
         DisplayTuningRecordPlay(&DispTunRecPlay);
         //DisplayFreq(1,0,nbrTrue/10,nbrTrue%10,PlaySource/16,PlaySource%16);
+        
+        // EEPROM speichern bei bedarf
+        if ((TICK_128_US - EepromTimer) >= TICKS_10ms)
+        {
+            nvm_tick_10ms();
+            EepromTimer -= TICKS_10ms;
+        }
     }
 }

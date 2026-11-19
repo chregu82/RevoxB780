@@ -7,11 +7,11 @@
       <itemPath>fuses.h</itemPath>
       <itemPath>ports.h</itemPath>
       <itemPath>bitop.h</itemPath>
-      <itemPath>remmem.h</itemPath>
       <itemPath>recplay.h</itemPath>
       <itemPath>protection.h</itemPath>
       <itemPath>timer.h</itemPath>
       <itemPath>tuner.h</itemPath>
+      <itemPath>nvm.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -22,11 +22,11 @@
                    projectFiles="true">
       <itemPath>b780_main.c</itemPath>
       <itemPath>ports.c</itemPath>
-      <itemPath>remmem.c</itemPath>
       <itemPath>recplay.c</itemPath>
       <itemPath>protection.c</itemPath>
       <itemPath>tuner.c</itemPath>
       <itemPath>timer.c</itemPath>
+      <itemPath>nvm.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

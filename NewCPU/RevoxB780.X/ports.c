@@ -26,7 +26,7 @@ void LoadOutputMultiplexer(MultiplexOutEnum outputNbr, unsigned char value)
     bitset(PORTB, OUT_PB4_DLEN4_OUTMUL);
 }
 
-void WriteToSAA(unsigned char pin, unsigned short data, unsigned char loadbit)
+void WriteToSAA(unsigned char pin, unsigned int data, unsigned char loadbit)
 {
     // strobe is always high, if set to low, duration is about 5us
     // data is latched on positive edge of strobe pin
@@ -83,8 +83,8 @@ void DisplayFreq(unsigned char On, unsigned char dig1, unsigned char dig2, unsig
     }
     
     // Display on
-    unsigned short dataA = 0;
-    unsigned short dataB = 0;
+    unsigned int dataA = 0;
+    unsigned int dataB = 0;
 
     if (dig2 > 0xF) dig2 = 5;
     if (dig3 > 0xF) dig3 = 29;
@@ -105,8 +105,8 @@ void DisplayFreq(unsigned char On, unsigned char dig1, unsigned char dig2, unsig
 
 void DisplayTuningRecordPlay(DisplayTuningRecordPlayType* p)
 {
-    unsigned short dataA = 0;
-    unsigned short dataB = 0;
+    unsigned int dataA = 0;
+    unsigned int dataB = 0;
     
     if (p->Refresh == 0) return;
     p->Refresh = 0;
