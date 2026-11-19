@@ -281,6 +281,8 @@ int main(void)
                     // leaving this state
                     if (AutoTune != AutoTuneHold)
                     {
+                        LoadOutputMultiplexer(Mul_Out_MC, 0);
+                        LoadOutputMultiplexer(Mul_Out_WW, 0);
                         DispTunRecPlay.TuningMode = TUNING_DISP_A;
                         DispTunRecPlay.Refresh = 1;
                         TuningTimer = TICK_128_US;
@@ -310,15 +312,59 @@ int main(void)
                     break;
                     
                   case AutoTuneCheckForStation:
-                    if ((Inputs[0].LOC) && (Inputs[0].THSTA) && ((TICK_128_US - TuningTimer) >= TICKS_10ms))
+                    if ((Inputs[0].LOC) && (Inputs[0].THSTA) && ((TICK_128_US - TuningTimer) >= TICKS_50ms))
                       {
-                        if ((TuningStep > 0) && (Inputs[0].FH)) AutoTune = AutoTuneTune;  // Skip if frequency too high
-                        else if ((TuningStep < 0) && (Inputs[0].FL == 0)) AutoTune = AutoTuneTune;  // Skip if frequency too low
-                        else AutoTune = AutoTuneHold;
+                        LoadOutputMultiplexer(Mul_Out_WW, 1);   // enables signals FH / FL
+                        /*if (TuningStep > 0)
+                          {
+                            if (Inputs[0].FH)
+                              {
+                                AutoTune = AutoTuneTune;  // Skip if frequency too high
+                              }
+                            else if (Inputs[0].FL == 0) // Frequency too low
+                              {
+                                ActPlayingFreq += (TuningStep / 2);
+                                if (ActPlayingFreq > HIGHEST_FREQ) ActPlayingFreq = LOWEST_FREQ;
+                                else if (ActPlayingFreq < LOWEST_FREQ) ActPlayingFreq = HIGHEST_FREQ;
+                                RefreshTuningDisplay(ActPlayingFreq);
+                                TuneToFreq(ActPlayingFreq);
+                                TuningTimer = TICK_128_US;
+                              }
+                            else
+                              {
+                                LoadOutputMultiplexer(Mul_Out_MC, 1);
+                                AutoTune = AutoTuneHold;
+                              }
+                          }
+                        else if (TuningStep < 0)
+                          {
+                            if (Inputs[0].FL == 0) AutoTune = AutoTuneTune;  // Skip if frequency too low
+                            else if (Inputs[0].FH) // Frequency too high
+                              {
+                                ActPlayingFreq += (TuningStep / 2);
+                                if (ActPlayingFreq > HIGHEST_FREQ) ActPlayingFreq = LOWEST_FREQ;
+                                else if (ActPlayingFreq < LOWEST_FREQ) ActPlayingFreq = HIGHEST_FREQ;
+                                RefreshTuningDisplay(ActPlayingFreq);
+                                TuneToFreq(ActPlayingFreq);
+                                TuningTimer = TICK_128_US;
+                              }
+                            else
+                              {
+                                LoadOutputMultiplexer(Mul_Out_MC, 1);
+                                AutoTune = AutoTuneHold;
+                              }
+                          }*/
+                        LoadOutputMultiplexer(Mul_Out_MC, 1);
+                        DispTunRecPlay.DolbyLed = Inputs[0].FL;
+                        DispTunRecPlay.StereoLed = Inputs[0].FH;
+                        DispTunRecPlay.Refresh = 1;
+                        AutoTune = AutoTuneHold;
                       }
                     else if ((TICK_128_US - TuningTimer) >= TICKS_100ms)
                       {
                         // Look for next station
+                        LoadOutputMultiplexer(Mul_Out_WW, 0);
+                        LoadOutputMultiplexer(Mul_Out_MC, 0);
                         AutoTune = AutoTuneTune;
                       }
                     break;
